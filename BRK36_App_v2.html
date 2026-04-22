@@ -1,0 +1,945 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="theme-color" content="#C8390A">
+<title>BRK36 — Tours de Contrôle</title>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700;800;900&family=Barlow:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bk:#C8390A;--bk2:#E8470D;--bkd:#8B2500;--bkl:#FFF0EB;
+  --gold:#F5A623;--ok:#1E7A3E;--okb:#E8F5EE;
+  --nok:#C0392B;--nokb:#FDECEA;--na:#5D6D7E;--nab:#EEF0F2;
+  --adm:#3949AB;--admb:#E8EAF6;
+  --bg:#FAFAF8;--bg2:#F2F0ED;--bg3:#E8E5E0;
+  --txt:#1A1714;--txt2:#6B6560;--txt3:#A09A94;
+  --bdr:rgba(0,0,0,0.08);--bdr2:rgba(0,0,0,0.14);
+  --sh:0 2px 12px rgba(0,0,0,0.07);--shl:0 8px 32px rgba(0,0,0,0.13);
+  --r:12px;--rl:18px;
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html,body{height:100%;font-family:'Barlow',sans-serif;background:var(--bg);color:var(--txt);font-size:15px}
+body{display:flex;flex-direction:column;min-height:100vh}
+
+/* LOADING */
+.loading{position:fixed;inset:0;background:linear-gradient(145deg,#1a0a00,#8B2500 50%,#C8390A);display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:9999;transition:opacity .3s}
+.loading.hide{opacity:0;pointer-events:none}
+.ld-logo{width:80px;height:80px;background:rgba(255,255,255,0.12);border-radius:24px;display:flex;align-items:center;justify-content:center;font-family:'Barlow Condensed',sans-serif;font-weight:900;font-size:28px;color:#fff;margin-bottom:16px;border:2px solid rgba(255,255,255,0.2)}
+.ld-txt{color:rgba(255,255,255,0.8);font-size:14px;margin-bottom:20px}
+.ld-bar{width:160px;height:4px;background:rgba(255,255,255,0.2);border-radius:2px;overflow:hidden}
+.ld-fill{height:100%;background:#fff;border-radius:2px;animation:ldanim 1.5s ease-in-out infinite}
+@keyframes ldanim{0%{width:0;margin-left:0}50%{width:60%;margin-left:20%}100%{width:0;margin-left:100%}}
+
+/* LOGIN */
+.login-page{min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;background:linear-gradient(145deg,#1a0a00,#8B2500 50%,#C8390A);padding:24px}
+.l-logo{width:80px;height:80px;background:rgba(255,255,255,0.12);border-radius:24px;display:flex;align-items:center;justify-content:center;font-family:'Barlow Condensed',sans-serif;font-weight:900;font-size:28px;color:#fff;margin-bottom:10px;border:2px solid rgba(255,255,255,0.2);box-shadow:0 8px 32px rgba(0,0,0,0.3)}
+.l-name{font-family:'Barlow Condensed',sans-serif;font-weight:900;font-size:36px;color:#fff;margin-bottom:2px;text-align:center;letter-spacing:2px}
+.l-sub{font-size:13px;color:rgba(255,255,255,0.6);margin-bottom:28px;text-align:center}
+.l-card{background:#fff;border-radius:var(--rl);padding:26px 22px;width:100%;max-width:360px;box-shadow:0 20px 60px rgba(0,0,0,0.3)}
+.l-card h2{font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:20px;margin-bottom:18px}
+.lf{margin-bottom:13px}
+.lf label{font-size:11px;font-weight:600;color:var(--txt2);letter-spacing:0.4px;text-transform:uppercase;display:block;margin-bottom:5px}
+.lf select,.lf input{width:100%;padding:11px 13px;font-family:'Barlow',sans-serif;font-size:15px;background:var(--bg2);border:1.5px solid var(--bdr2);border-radius:var(--r);color:var(--txt);outline:none;transition:border-color .15s}
+.lf select:focus,.lf input:focus{border-color:var(--bk)}
+.l-btn{width:100%;padding:14px;background:linear-gradient(135deg,var(--bkd),var(--bk));color:#fff;border:none;border-radius:var(--r);font-family:'Barlow Condensed',sans-serif;font-size:18px;font-weight:700;cursor:pointer;margin-top:4px;box-shadow:0 4px 16px rgba(200,57,10,0.35);transition:transform .1s}
+.l-btn:active{transform:scale(0.98)}
+.l-err{background:var(--nokb);color:var(--nok);padding:9px 13px;border-radius:var(--r);font-size:13px;font-weight:600;margin-top:8px;display:none}
+.l-err.on{display:block}
+.l-sync{background:var(--admb);color:var(--adm);padding:9px 13px;border-radius:var(--r);font-size:12px;font-weight:500;margin-top:8px;text-align:center;display:none}
+.l-sync.on{display:block}
+
+/* APP */
+.app{display:none;flex-direction:column;min-height:100vh}
+.app.on{display:flex}
+
+/* HEADER */
+.hdr{background:linear-gradient(135deg,var(--bkd),var(--bk) 60%,var(--bk2));padding:0 14px;height:54px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;position:sticky;top:0;z-index:200}
+.hdr-l{display:flex;align-items:center;gap:9px}
+.hdr-logo{width:32px;height:32px;background:rgba(255,255,255,0.15);border-radius:8px;display:flex;align-items:center;justify-content:center;font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:11px;color:#fff;text-align:center;line-height:1.1}
+.hdr-info .t{font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:15px;color:#fff}
+.hdr-info .s{font-size:10px;color:rgba(255,255,255,0.6)}
+.hdr-r{display:flex;align-items:center;gap:5px}
+.hdr-user{background:rgba(255,255,255,0.15);color:#fff;font-size:11px;font-weight:600;padding:4px 9px;border-radius:20px}
+.hdr-sync{background:rgba(255,255,255,0.1);border:none;color:rgba(255,255,255,0.7);font-size:15px;cursor:pointer;border-radius:7px;width:28px;height:28px;display:flex;align-items:center;justify-content:center}
+.hdr-out{background:rgba(255,255,255,0.1);border:none;color:rgba(255,255,255,0.7);font-size:15px;cursor:pointer;border-radius:7px;width:28px;height:28px;display:flex;align-items:center;justify-content:center}
+
+/* SYNC BANNER */
+.sync-banner{background:var(--admb);padding:8px 14px;display:flex;align-items:center;justify-content:space-between;font-size:12px;color:var(--adm);font-weight:600;display:none}
+.sync-banner.on{display:flex}
+
+/* MAIN */
+.main{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch}
+.content{padding:13px;max-width:800px;margin:0 auto;padding-bottom:90px}
+
+/* BOTTOM NAV */
+.bnav{position:sticky;bottom:0;background:#fff;border-top:1.5px solid var(--bdr2);display:flex;z-index:100;padding-bottom:env(safe-area-inset-bottom);box-shadow:0 -3px 16px rgba(0,0,0,0.08);flex-shrink:0}
+.nb{flex:1;display:flex;flex-direction:column;align-items:center;padding:7px 2px 9px;border:none;background:transparent;color:var(--txt3);cursor:pointer;font-family:'Barlow',sans-serif;gap:2px;position:relative;transition:color .15s}
+.nb.on{color:var(--bk)}
+.nb.on::after{content:'';position:absolute;top:0;left:15%;right:15%;height:2.5px;background:var(--bk);border-radius:0 0 3px 3px}
+.nb-i{font-size:20px;line-height:1}
+.nb-l{font-size:9px;font-weight:600;letter-spacing:0.3px}
+
+/* SECTIONS */
+.sec{display:none}.sec.on{display:block}
+
+/* CARDS */
+.card{background:#fff;border-radius:var(--rl);padding:13px 15px;margin-bottom:9px;box-shadow:var(--sh);border:1px solid var(--bdr)}
+.ct{font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:11px;color:var(--txt2);letter-spacing:0.5px;text-transform:uppercase;margin-bottom:9px;padding-bottom:7px;border-bottom:1px solid var(--bdr);display:flex;align-items:center;justify-content:space-between}
+
+/* INFO GRID */
+.ig{display:grid;grid-template-columns:repeat(2,1fr);gap:7px;margin-bottom:9px}
+.ic{background:var(--bg2);border-radius:var(--r);padding:9px 11px}
+.ic label{font-size:10px;font-weight:600;letter-spacing:0.4px;color:var(--txt3);text-transform:uppercase;display:block;margin-bottom:2px}
+.ic .v{font-family:'Barlow Condensed',sans-serif;font-size:18px;font-weight:700;color:var(--txt)}
+.ic select,.ic input{font-family:'Barlow',sans-serif;font-size:14px;font-weight:600;background:transparent;border:none;color:var(--txt);width:100%;outline:none;cursor:pointer}
+.ic.hl{background:var(--bkl)}
+.ic.hl label{color:var(--bkd)}
+
+/* PROGRESS */
+.pb-w{margin-bottom:10px}
+.pb-t{display:flex;justify-content:space-between;font-size:11px;color:var(--txt2);margin-bottom:4px}
+.pb{height:5px;background:var(--bg3);border-radius:3px;overflow:hidden}
+.pf{height:100%;background:linear-gradient(90deg,var(--bk),var(--gold));border-radius:3px;transition:width .3s}
+
+/* ZONES */
+.zones{display:flex;gap:5px;margin-bottom:10px;overflow-x:auto;padding-bottom:3px}
+.zones::-webkit-scrollbar{display:none}
+.zb{padding:5px 11px;font-size:11px;font-weight:600;border-radius:20px;border:1.5px solid var(--bdr2);background:#fff;color:var(--txt2);cursor:pointer;white-space:nowrap;flex-shrink:0;font-family:'Barlow',sans-serif;transition:all .12s}
+.zb.on{background:var(--bk);color:#fff;border-color:var(--bk)}
+
+/* CHECKLIST */
+.zg{margin-bottom:10px}
+.zh{font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:11px;letter-spacing:0.5px;text-transform:uppercase;color:var(--txt2);margin-bottom:4px;padding:5px 0;display:flex;align-items:center;gap:5px}
+.cr{display:flex;align-items:center;gap:7px;padding:8px 11px;background:#fff;border-radius:var(--r);margin-bottom:3px;border:1px solid var(--bdr)}
+.ci{flex:1;min-width:0}
+.cl{font-size:13px;font-weight:600;color:var(--txt)}
+.cd{font-size:10px;color:var(--txt3);margin-top:1px}
+.cbs{display:flex;gap:3px;flex-shrink:0}
+.cb{font-size:11px;font-weight:700;padding:4px 7px;border-radius:6px;border:1.5px solid var(--bdr);cursor:pointer;background:transparent;font-family:'Barlow',sans-serif;color:var(--txt2);transition:all .1s}
+.cb.ok{background:var(--okb);color:var(--ok);border-color:var(--ok)}
+.cb.nok{background:var(--nokb);color:var(--nok);border-color:var(--nok)}
+.cb.na{background:var(--nab);color:var(--na);border-color:var(--na)}
+
+/* RESULT */
+.rb{background:linear-gradient(135deg,var(--bkd),var(--bk));border-radius:var(--rl);padding:13px 16px;margin-bottom:9px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:7px;box-shadow:var(--shl)}
+.rs{display:flex;gap:12px}
+.rs .n{font-family:'Barlow Condensed',sans-serif;font-size:24px;font-weight:800;color:#fff}
+.rs .l{font-size:9px;font-weight:600;color:rgba(255,255,255,0.55);text-transform:uppercase;letter-spacing:0.4px}
+.rp{font-family:'Barlow Condensed',sans-serif;font-size:34px;font-weight:800;color:var(--gold)}
+
+/* BUTTONS */
+.btn-ok{width:100%;padding:13px;background:linear-gradient(135deg,var(--ok),#27AE60);color:#fff;border:none;border-radius:var(--rl);font-family:'Barlow Condensed',sans-serif;font-size:16px;font-weight:700;cursor:pointer;margin-bottom:5px;box-shadow:0 4px 14px rgba(30,122,62,0.25);transition:transform .1s}
+.btn-ok:active{transform:scale(0.98)}
+.btn-adm{width:100%;padding:11px;background:linear-gradient(135deg,#283593,var(--adm));color:#fff;border:none;border-radius:var(--r);font-family:'Barlow Condensed',sans-serif;font-size:14px;font-weight:700;cursor:pointer;margin-bottom:5px}
+.btn-sec{background:transparent;color:var(--txt2);border:1.5px solid var(--bdr2);border-radius:var(--r);padding:7px 13px;font-size:12px;font-weight:600;cursor:pointer;font-family:'Barlow',sans-serif}
+.btn-danger{width:100%;padding:10px;background:var(--nokb);color:var(--nok);border:1.5px solid var(--nok);border-radius:var(--r);font-family:'Barlow',sans-serif;font-size:13px;font-weight:600;cursor:pointer;margin-top:6px}
+
+/* BADGES */
+.badge{font-size:11px;font-weight:700;padding:3px 8px;border-radius:20px;display:inline-block}
+.b-ok{background:var(--okb);color:var(--ok)}
+.b-nok{background:var(--nokb);color:var(--nok)}
+.b-warn{background:#FEF9E7;color:#B7770D}
+.b-gray{background:var(--bg2);color:var(--txt2)}
+.b-adm{background:var(--admb);color:var(--adm)}
+
+/* HISTORY */
+.hc{background:#fff;border-radius:var(--rl);padding:12px 14px;margin-bottom:7px;border:1px solid var(--bdr);box-shadow:var(--sh)}
+.hh{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:4px;flex-wrap:wrap;gap:4px}
+.hdate{font-family:'Barlow Condensed',sans-serif;font-size:15px;font-weight:700}
+.hm{font-size:11px;color:var(--txt2);margin-bottom:5px}
+.hb{display:flex;gap:4px;flex-wrap:wrap}
+.hn{font-size:11px;color:var(--nok);margin-top:5px;padding-top:5px;border-top:1px solid var(--bdr)}
+
+/* STATS */
+.sg{display:grid;grid-template-columns:repeat(2,1fr);gap:7px;margin-bottom:10px}
+.sc{background:#fff;border-radius:var(--rl);padding:11px;border:1px solid var(--bdr);box-shadow:var(--sh);text-align:center}
+.sn{font-family:'Barlow Condensed',sans-serif;font-size:28px;font-weight:800;color:var(--bk)}
+.sl{font-size:10px;color:var(--txt2);font-weight:600;text-transform:uppercase;letter-spacing:0.4px;margin-top:2px}
+.mr{display:flex;align-items:center;gap:7px;padding:8px 0;border-bottom:1px solid var(--bdr)}
+.mr:last-child{border-bottom:none}
+.mn{flex:1;font-weight:600;font-size:13px}
+
+/* ADMIN BANNER */
+.ab{background:linear-gradient(135deg,#1A237E,var(--adm));border-radius:var(--rl);padding:12px 15px;margin-bottom:9px;display:flex;align-items:center;gap:9px}
+.ab .ai{font-size:22px}
+.ab .at{color:#fff}
+.ab .at strong{font-size:14px;display:block}
+.ab .at span{font-size:11px;opacity:.75}
+
+/* PASSATION */
+.pc{background:#fff;border-radius:var(--rl);padding:13px 15px;margin-bottom:8px;border:1px solid var(--bdr);box-shadow:var(--sh)}
+.ph{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:5px;flex-wrap:wrap;gap:4px}
+.pa{font-weight:700;font-size:14px}
+.pt{font-size:11px;color:var(--txt3)}
+.ps{font-size:12px;color:var(--txt2);margin-bottom:6px}
+.pm{font-size:13px;color:var(--txt);line-height:1.5;padding:9px 11px;background:var(--bg2);border-radius:var(--r);margin-bottom:7px}
+.patt{display:flex;align-items:center;gap:6px;padding:8px 10px;background:var(--bkl);border-radius:var(--r);text-decoration:none}
+.patt .pi{font-size:18px}
+.patt .pn{font-size:12px;font-weight:600;color:var(--bk);flex:1}
+.pnew{background:linear-gradient(135deg,#E65100,var(--bk));border-radius:var(--rl);padding:14px 16px;margin-bottom:14px}
+.pnew h3{font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:16px;color:#fff;margin-bottom:12px}
+.fd{border:2px dashed rgba(255,255,255,0.3);border-radius:var(--r);padding:14px;text-align:center;cursor:pointer}
+.fd input{display:none}
+.fd .fdi{font-size:26px;margin-bottom:4px}
+.fd .fdt{font-size:12px;color:rgba(255,255,255,0.7)}
+.fd .fds{font-size:12px;color:#fff;font-weight:600;margin-top:3px}
+
+/* CHECKLIST EDITOR */
+.ce{display:flex;align-items:center;gap:7px;padding:8px 0;border-bottom:1px solid var(--bdr)}
+.ce:last-child{border-bottom:none}
+.ce select{font-family:'Barlow',sans-serif;font-size:11px;background:var(--bg2);border:1px solid var(--bdr2);border-radius:6px;padding:4px 6px;color:var(--txt);outline:none;flex-shrink:0}
+.ce input{flex:1;font-family:'Barlow',sans-serif;font-size:13px;background:var(--bg2);border:1px solid var(--bdr2);border-radius:7px;padding:6px 10px;color:var(--txt);outline:none}
+.ce input:focus{border-color:var(--bk)}
+.ce-del{background:none;border:none;cursor:pointer;color:var(--nok);font-size:16px;flex-shrink:0;padding:0 3px}
+
+/* CONFIG INPUTS */
+.cfg-in{width:100%;font-family:'Barlow',sans-serif;font-size:14px;background:var(--bg2);border:1.5px solid var(--bdr2);border-radius:var(--r);padding:10px 12px;color:var(--txt);outline:none;margin-bottom:8px;transition:border-color .15s}
+.cfg-in:focus{border-color:var(--bk)}
+
+/* ALERT */
+.alert{padding:9px 13px;border-radius:var(--r);font-size:13px;font-weight:600;margin-bottom:7px;display:none}
+.alert.on{display:block}
+.a-ok{background:var(--okb);color:var(--ok)}
+.a-err{background:var(--nokb);color:var(--nok)}
+.a-info{background:var(--admb);color:var(--adm)}
+
+/* EMPTY */
+.empty{text-align:center;padding:36px 20px;color:var(--txt2)}
+.empty-i{font-size:42px;margin-bottom:8px}
+
+textarea{width:100%;font-family:'Barlow',sans-serif;font-size:13px;background:var(--bg2);border:1.5px solid var(--bdr2);border-radius:var(--r);padding:10px 12px;color:var(--txt);resize:vertical;min-height:75px;outline:none;transition:border-color .15s}
+textarea:focus{border-color:var(--bk)}
+
+@media(min-width:640px){.ig{grid-template-columns:repeat(4,1fr)}.sg{grid-template-columns:repeat(4,1fr)}}
+</style>
+</head>
+<body>
+
+<!-- LOADING -->
+<div class="loading" id="loadingScreen">
+  <div class="ld-logo">BK</div>
+  <div class="ld-txt">Chargement BRK36...</div>
+  <div class="ld-bar"><div class="ld-fill"></div></div>
+</div>
+
+<!-- LOGIN -->
+<div id="loginPage" class="login-page" style="display:none">
+  <div class="l-logo" id="loginLogo">BK</div>
+  <div class="l-name" id="loginRestName">BRK36</div>
+  <div class="l-sub">Tours de Contrôle</div>
+  <div class="l-card">
+    <h2>Connexion</h2>
+    <div class="lf">
+      <label>Votre nom</label>
+      <select id="loginName"><option value="">-- Choisir --</option></select>
+    </div>
+    <div class="lf">
+      <label>Mot de passe</label>
+      <input type="password" id="loginPwd" placeholder="••••••••" onkeydown="if(event.key==='Enter')doLogin()"/>
+    </div>
+    <button class="l-btn" onclick="doLogin()">Se connecter</button>
+    <div class="l-err" id="loginErr">Nom ou mot de passe incorrect</div>
+    <div class="l-sync" id="loginSync">Synchronisation en cours...</div>
+  </div>
+</div>
+
+<!-- APP -->
+<div id="appDiv" class="app">
+  <div class="hdr">
+    <div class="hdr-l">
+      <div class="hdr-logo" id="hdrLogo">BK</div>
+      <div class="hdr-info">
+        <div class="t" id="hdrName">BRK36</div>
+        <div class="s" id="hdrShift">Tours de Contrôle</div>
+      </div>
+    </div>
+    <div class="hdr-r">
+      <div class="hdr-user" id="hdrUser">—</div>
+      <button class="hdr-sync" onclick="syncData()" title="Synchroniser">🔄</button>
+      <button class="hdr-out" onclick="doLogout()" title="Déconnexion">⏏</button>
+    </div>
+  </div>
+
+  <div class="sync-banner" id="syncBanner">
+    🔄 Synchronisation... <span id="syncMsg">Mise à jour des données</span>
+  </div>
+
+  <div class="main" id="mainScroll">
+  <div class="content">
+
+    <!-- TOURNÉE -->
+    <div id="sec-tournee" class="sec on">
+      <div id="adminBanner" class="ab" style="display:none">
+        <div class="ai">👑</div>
+        <div class="at"><strong>Mode Administrateur</strong><span>Accès complet — <span id="abRestName">BRK36</span></span></div>
+      </div>
+      <div class="ig">
+        <div class="ic"><label>Date</label><div class="v" id="dateVal">--</div></div>
+        <div class="ic"><label>Heure</label><div class="v" id="heureVal">--</div></div>
+        <div class="ic hl"><label>Manager</label><div class="v" id="mgrVal" style="font-size:14px;padding-top:3px">—</div></div>
+        <div class="ic hl"><label>Service ▼</label>
+          <select id="selSvc" onchange="updHdr()">
+            <option>Ouverture</option><option selected>Midi</option>
+            <option>Après-midi</option><option>Soir</option>
+            <option>Fermeture</option><option>Nuit</option>
+          </select>
+        </div>
+      </div>
+      <div class="pb-w">
+        <div class="pb-t"><span>Progression</span><span id="progLbl">0 / 0</span></div>
+        <div class="pb"><div class="pf" id="progFill" style="width:0%"></div></div>
+      </div>
+      <div class="zones" id="zonesRow"></div>
+      <div id="chkContainer"></div>
+      <div class="rb">
+        <div class="rs">
+          <div><div class="n" id="resOK">0</div><div class="l">OK</div></div>
+          <div><div class="n" id="resNOK">0</div><div class="l">NOK</div></div>
+          <div><div class="n" id="resNA">0</div><div class="l">N/A</div></div>
+        </div>
+        <div class="rp" id="resPCT">-%</div>
+      </div>
+      <div class="card">
+        <div class="ct">Observations générales</div>
+        <textarea id="gNote" placeholder="Anomalies, remarques, actions correctives..."></textarea>
+      </div>
+      <div class="alert a-ok" id="alertOK"></div>
+      <div class="alert a-err" id="alertErr"></div>
+      <button class="btn-ok" onclick="saveTournee()">✓ ENREGISTRER LA TOURNÉE</button>
+      <button class="btn-sec" style="width:100%;margin-bottom:6px" onclick="resetTournee()">↺ Réinitialiser</button>
+    </div>
+
+    <!-- HISTORIQUE -->
+    <div id="sec-historique" class="sec">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+        <span style="font-family:'Barlow Condensed',sans-serif;font-size:20px;font-weight:700">Historique</span>
+        <div style="display:flex;gap:5px">
+          <button class="btn-sec" onclick="toggleFilter()" style="font-size:11px;padding:5px 10px">Filtrer</button>
+          <button class="btn-sec" onclick="exportCSV()" style="font-size:11px;padding:5px 10px">⬇ CSV</button>
+        </div>
+      </div>
+      <div id="filterBar" style="display:none;margin-bottom:9px">
+        <select id="filterMgr" onchange="renderHistory()" style="width:100%;padding:8px 11px;font-family:'Barlow',sans-serif;font-size:13px;background:var(--bg2);border:1px solid var(--bdr2);border-radius:var(--r);color:var(--txt);outline:none"></select>
+      </div>
+      <div id="histList"></div>
+    </div>
+
+    <!-- STATS -->
+    <div id="sec-stats" class="sec">
+      <div style="font-family:'Barlow Condensed',sans-serif;font-size:20px;font-weight:700;margin-bottom:10px">Statistiques</div>
+      <div class="sg" id="statsGrid"></div>
+      <div id="statsChart" class="card"></div>
+      <div id="statsMgr" class="card"></div>
+    </div>
+
+    <!-- PASSATION -->
+    <div id="sec-passation" class="sec">
+      <div style="font-family:'Barlow Condensed',sans-serif;font-size:20px;font-weight:700;margin-bottom:12px">Passation de service</div>
+      <div class="pnew">
+        <h3>✍️ Nouvelle passation</h3>
+        <textarea id="passMsg" placeholder="Informations importantes pour le manager suivant..." style="background:rgba(255,255,255,0.15);border-color:rgba(255,255,255,0.2);color:#fff;margin-bottom:10px"></textarea>
+        <div class="fd" onclick="document.getElementById('passFile').click()">
+          <input type="file" id="passFile" accept="image/*,.pdf,.doc,.docx" onchange="onFileSelect(this)"/>
+          <div class="fdi">📎</div>
+          <div class="fdt">Ajouter une pièce jointe (photo, PDF...)</div>
+          <div class="fds" id="fileSelName"></div>
+        </div>
+        <button onclick="savePassation()" style="width:100%;padding:12px;background:#fff;color:var(--bk);border:none;border-radius:var(--r);font-family:'Barlow Condensed',sans-serif;font-size:16px;font-weight:700;cursor:pointer;margin-top:10px">
+          Envoyer la passation ↗
+        </button>
+        <div class="alert a-ok" id="passAlert" style="margin-top:8px"></div>
+      </div>
+      <div style="font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:700;color:var(--txt2);margin-bottom:8px;text-transform:uppercase;letter-spacing:0.5px">Passations récentes</div>
+      <div id="passationList"></div>
+    </div>
+
+    <!-- ADMIN -->
+    <div id="sec-admin" class="sec">
+      <div class="ab" style="margin-bottom:12px">
+        <div class="ai">👑</div>
+        <div class="at"><strong>Panneau Administrateur</strong><span>BRK36 — Gestion complète</span></div>
+      </div>
+
+      <!-- Config Restaurant -->
+      <div class="card">
+        <div class="ct">Configuration restaurant</div>
+        <label style="font-size:11px;font-weight:600;color:var(--txt2);text-transform:uppercase;letter-spacing:0.4px;display:block;margin-bottom:5px">Nom du restaurant</label>
+        <input class="cfg-in" id="cfgRestName" placeholder="Ex: BRK36" value="BRK36"/>
+        <label style="font-size:11px;font-weight:600;color:var(--txt2);text-transform:uppercase;letter-spacing:0.4px;display:block;margin-bottom:5px">Mot de passe Admin</label>
+        <input class="cfg-in" id="cfgAdminPwd" type="password" placeholder="Mot de passe admin" value="BRK36!"/>
+        <label style="font-size:11px;font-weight:600;color:var(--txt2);text-transform:uppercase;letter-spacing:0.4px;display:block;margin-bottom:5px">Mot de passe Managers</label>
+        <input class="cfg-in" id="cfgMgrPwd" type="password" placeholder="Mot de passe managers" value="BRK36?"/>
+        <button class="btn-adm" onclick="saveRestConfig()">💾 Sauvegarder configuration</button>
+        <div class="alert a-ok" id="cfgAlert" style="margin-top:6px"></div>
+      </div>
+
+      <!-- Gestion Managers -->
+      <div class="card">
+        <div class="ct">
+          <span>Managers</span>
+          <button onclick="addManager()" style="background:var(--bk);color:#fff;border:none;border-radius:7px;padding:4px 10px;font-size:11px;font-weight:700;cursor:pointer;font-family:'Barlow',sans-serif">+ Ajouter</button>
+        </div>
+        <div id="mgrEditor"></div>
+        <button class="btn-adm" onclick="saveManagers()" style="margin-top:10px">💾 Sauvegarder managers</button>
+        <div class="alert a-ok" id="mgrAlert" style="margin-top:6px"></div>
+      </div>
+
+      <!-- Checklist éditable -->
+      <div class="card">
+        <div class="ct">
+          <span>Checklist de contrôle</span>
+          <button onclick="addCheckItem()" style="background:var(--bk);color:#fff;border:none;border-radius:7px;padding:4px 10px;font-size:11px;font-weight:700;cursor:pointer;font-family:'Barlow',sans-serif">+ Ajouter</button>
+        </div>
+        <div id="checklistEditor"></div>
+        <button class="btn-adm" onclick="saveChecklist()" style="margin-top:10px">💾 Sauvegarder checklist</button>
+        <div class="alert a-ok" id="clAlert" style="margin-top:6px"></div>
+      </div>
+
+      <!-- Stats globales -->
+      <div class="card">
+        <div class="ct">Statistiques globales</div>
+        <div id="adminStats"></div>
+      </div>
+
+      <!-- Données -->
+      <div class="card">
+        <div class="ct">Gestion des données</div>
+        <button class="btn-sec" style="width:100%;margin-bottom:6px" onclick="exportCSV()">⬇ Exporter tout en CSV</button>
+        <button class="btn-sec" style="width:100%;margin-bottom:6px" onclick="syncData()">🔄 Synchroniser maintenant</button>
+        <button class="btn-danger" onclick="clearAllData()">🗑 Effacer toutes les données</button>
+      </div>
+    </div>
+
+  </div>
+  </div>
+
+  <nav class="bnav">
+    <button class="nb on" onclick="goTab('tournee',this)" data-tab="tournee"><span class="nb-i">📋</span><span class="nb-l">Tournée</span></button>
+    <button class="nb" onclick="goTab('historique',this)" data-tab="historique"><span class="nb-i">📁</span><span class="nb-l">Historique</span></button>
+    <button class="nb" onclick="goTab('stats',this)" data-tab="stats"><span class="nb-i">📊</span><span class="nb-l">Stats</span></button>
+    <button class="nb" onclick="goTab('passation',this)" data-tab="passation"><span class="nb-i">🔄</span><span class="nb-l">Passation</span></button>
+    <button class="nb" id="adminNavBtn" onclick="goTab('admin',this)" data-tab="admin" style="display:none"><span class="nb-i">👑</span><span class="nb-l">Admin</span></button>
+  </nav>
+</div>
+
+<script>
+// ══ CONFIG ══
+const API_KEY = '$2a$10$W53poFAvB8nYEmdoiZ7DOOxmBEQjQic0fTBY5tRz1JxFe9pa1eWEu';
+const JSONBIN_URL = 'https://api.jsonbin.io/v3/b';
+let BIN_ID = localStorage.getItem('brk36_bin_id') || '';
+
+// Données par défaut
+let CFG = {
+  restaurant: 'BRK36',
+  admins: ['Clement','Valentin'],
+  managers: ['Enock','Brice','Cecilia','Anais','Gwendeline','Karine','Chloé','Clement','Valentin'],
+  adminPwd: 'BRK36!',
+  mgrPwd: 'BRK36?'
+};
+
+const CHECKS_DEFAULT = [
+  {id:'c1',zone:'cuisine',label:'Températures équipements',detail:'Friteuses, grills, bain-marie, chambres froides'},
+  {id:'c2',zone:'cuisine',label:'Propreté des postes',detail:'Plans de travail, équipements, sol cuisine'},
+  {id:'c3',zone:'cuisine',label:'DLC / DLUO produits',detail:'Vérifier dates, étiquetage FIFO'},
+  {id:'c4',zone:'cuisine',label:'Niveaux des stocks',detail:'Viandes, pains, sauces, légumes'},
+  {id:'c5',zone:'cuisine',label:'Fonctionnement équipements',detail:'Friteuses, grills, toasters, micro-ondes'},
+  {id:'c6',zone:'cuisine',label:'Traçabilité',detail:'Feuilles de relevé de températures'},
+  {id:'c7',zone:'comptoir',label:'Propreté comptoir & caisses',detail:'Surfaces, écrans, claviers, plateaux'},
+  {id:'c8',zone:'comptoir',label:'Affichage prix & promotions',detail:'Menus à jour, PLV correcte'},
+  {id:'c9',zone:'comptoir',label:'Stock emballages',detail:'Sacs, gobelets, plateaux, serviettes'},
+  {id:'c10',zone:'comptoir',label:"Temps d'attente clients",detail:'Objectif < 3 min au comptoir'},
+  {id:'c11',zone:'comptoir',label:'Fonds de caisse',detail:'Vérification des caisses'},
+  {id:'c12',zone:'salle',label:'Propreté tables & chaises',detail:'Tables essuyées, chaises en place'},
+  {id:'c13',zone:'salle',label:'Sol de la salle propre',detail:'Nettoyage, absence de déchets'},
+  {id:'c14',zone:'salle',label:'Poubelles & tri déchets',detail:'< 2/3 pleines, tri sélectif'},
+  {id:'c15',zone:'salle',label:'Toilettes clients',detail:'Propreté, savon, papier, poubelle'},
+  {id:'c16',zone:'securite',label:'Issues de secours',detail:'Accès libre, signalisation visible'},
+  {id:'c17',zone:'securite',label:'Extincteurs accessibles',detail:'Non obstrués, contrôle à jour'},
+  {id:'c18',zone:'securite',label:'Éclairage de sécurité',detail:'Blocs de secours fonctionnels'},
+  {id:'c19',zone:'hygiene',label:'Tenue vestimentaire équipe',detail:'Uniforme, charlotte, gants si requis'},
+  {id:'c20',zone:'hygiene',label:'Lavage des mains',detail:'Protocole respecté aux postes clés'},
+  {id:'c21',zone:'hygiene',label:'Produits nettoyage rangés',detail:'Armoire fermée, étiquetés, séparés'},
+  {id:'c22',zone:'hygiene',label:'Lave-mains opérationnel',detail:'Savon, essuie-mains disponibles'},
+];
+
+const ZONES = {
+  cuisine:{label:'Cuisine',icon:'🍔'},
+  comptoir:{label:'Comptoir',icon:'🧾'},
+  salle:{label:'Salle',icon:'🪑'},
+  securite:{label:'Sécurité',icon:'🔒'},
+  hygiene:{label:'Hygiène',icon:'🧼'}
+};
+
+// ══ STATE ══
+let curUser=null, isAdmin=false;
+let statuses={}, curZone='all';
+let history=[], passations=[], checks=[...CHECKS_DEFAULT];
+let attachData=null;
+
+// ══ JSONBIN API ══
+async function apiGet() {
+  if(!BIN_ID) return null;
+  try {
+    const r = await fetch(`${JSONBIN_URL}/${BIN_ID}/latest`, {
+      headers: {'X-Master-Key': API_KEY, 'X-Bin-Meta': 'false'}
+    });
+    if(!r.ok) return null;
+    return await r.json();
+  } catch(e) { return null; }
+}
+
+async function apiSet(data) {
+  if(!BIN_ID) {
+    // Créer le bin
+    try {
+      const r = await fetch(JSONBIN_URL, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-Master-Key': API_KEY,
+          'X-Bin-Name': 'BRK36-Data',
+          'X-Bin-Private': 'false'
+        },
+        body: JSON.stringify(data)
+      });
+      if(r.ok) {
+        const res = await r.json();
+        BIN_ID = res.metadata?.id || '';
+        if(BIN_ID) localStorage.setItem('brk36_bin_id', BIN_ID);
+        return true;
+      }
+    } catch(e) {}
+    return false;
+  }
+  try {
+    const r = await fetch(`${JSONBIN_URL}/${BIN_ID}`, {
+      method: 'PUT',
+      headers: {'Content-Type':'application/json','X-Master-Key':API_KEY},
+      body: JSON.stringify(data)
+    });
+    return r.ok;
+  } catch(e) { return false; }
+}
+
+function getSharedData() {
+  return { history, passations, checks, cfg: CFG };
+}
+
+async function syncData() {
+  showSyncBanner('Synchronisation...');
+  const remote = await apiGet();
+  if(remote) {
+    if(remote.history) history = remote.history;
+    if(remote.passations) passations = remote.passations;
+    if(remote.checks && remote.checks.length) checks = remote.checks;
+    if(remote.cfg) {
+      CFG = {...CFG, ...remote.cfg};
+      applyConfig();
+    }
+    saveLocal();
+  }
+  const ok = await apiSet(getSharedData());
+  hideSyncBanner(ok ? '✓ Synchronisé' : '⚠️ Hors ligne');
+  renderHistory(); renderStats(); renderPassations();
+  if(isAdmin) renderAdminPanel();
+}
+
+async function pushData() {
+  await apiSet(getSharedData());
+}
+
+function showSyncBanner(msg) {
+  const b = document.getElementById('syncBanner');
+  document.getElementById('syncMsg').textContent = msg;
+  b.classList.add('on');
+}
+function hideSyncBanner(msg) {
+  document.getElementById('syncMsg').textContent = msg;
+  setTimeout(() => document.getElementById('syncBanner').classList.remove('on'), 2000);
+}
+
+// ══ LOCAL STORAGE ══
+function saveLocal() {
+  try {
+    localStorage.setItem('brk36_hist', JSON.stringify(history.slice(0,300)));
+    localStorage.setItem('brk36_pass', JSON.stringify(passations.slice(0,100)));
+    localStorage.setItem('brk36_checks', JSON.stringify(checks));
+    localStorage.setItem('brk36_cfg', JSON.stringify(CFG));
+  } catch(e) {}
+}
+
+function loadLocal() {
+  try {
+    const h = localStorage.getItem('brk36_hist'); if(h) history = JSON.parse(h);
+    const p = localStorage.getItem('brk36_pass'); if(p) passations = JSON.parse(p);
+    const c = localStorage.getItem('brk36_checks'); if(c && JSON.parse(c).length) checks = JSON.parse(c);
+    const cfg = localStorage.getItem('brk36_cfg'); if(cfg) CFG = {...CFG,...JSON.parse(cfg)};
+  } catch(e) {}
+}
+
+// ══ INIT ══
+async function init() {
+  loadLocal();
+  applyConfig();
+  // Tenter sync en arrière-plan
+  try {
+    const remote = await apiGet();
+    if(remote) {
+      if(remote.history) history = remote.history;
+      if(remote.passations) passations = remote.passations;
+      if(remote.checks && remote.checks.length) checks = remote.checks;
+      if(remote.cfg) { CFG = {...CFG,...remote.cfg}; applyConfig(); }
+      saveLocal();
+    }
+    if(!BIN_ID) await apiSet(getSharedData());
+  } catch(e) {}
+  // Afficher login
+  setTimeout(() => {
+    document.getElementById('loadingScreen').classList.add('hide');
+    document.getElementById('loginPage').style.display = 'flex';
+    renderLoginSelect();
+  }, 1200);
+}
+
+function applyConfig() {
+  const name = CFG.restaurant || 'BRK36';
+  ['loginRestName','hdrName','abRestName'].forEach(id => {
+    const el = document.getElementById(id);
+    if(el) el.textContent = name;
+  });
+  const logoEl = document.getElementById('loginLogo');
+  if(logoEl) logoEl.textContent = name.slice(0,4);
+  const hdrLogoEl = document.getElementById('hdrLogo');
+  if(hdrLogoEl) hdrLogoEl.textContent = name.slice(0,4);
+  if(document.getElementById('cfgRestName')) {
+    document.getElementById('cfgRestName').value = name;
+    document.getElementById('cfgAdminPwd').value = CFG.adminPwd || 'BRK36!';
+    document.getElementById('cfgMgrPwd').value = CFG.mgrPwd || 'BRK36?';
+  }
+}
+
+function renderLoginSelect() {
+  const sel = document.getElementById('loginName');
+  const admins = CFG.admins || ['Clement','Valentin'];
+  const managers = (CFG.managers || []).filter(m => !admins.includes(m));
+  sel.innerHTML = '<option value="">-- Choisir --</option>' +
+    `<optgroup label="Administrateurs">${admins.map(m=>`<option value="${m}">${m}</option>`).join('')}</optgroup>` +
+    `<optgroup label="Managers">${managers.map(m=>`<option value="${m}">${m}</option>`).join('')}</optgroup>`;
+}
+
+// ══ LOGIN ══
+function doLogin() {
+  const name = document.getElementById('loginName').value;
+  const pwd = document.getElementById('loginPwd').value;
+  const err = document.getElementById('loginErr');
+  if(!name){err.textContent='Veuillez choisir votre nom';err.classList.add('on');return}
+  const admins = CFG.admins || ['Clement','Valentin'];
+  const isAdm = admins.includes(name);
+  const correctPwd = isAdm ? (CFG.adminPwd||'BRK36!') : (CFG.mgrPwd||'BRK36?');
+  if(pwd !== correctPwd){err.textContent='Mot de passe incorrect';err.classList.add('on');return}
+  err.classList.remove('on');
+  curUser = name; isAdmin = isAdm;
+  document.getElementById('loginPage').style.display = 'none';
+  document.getElementById('appDiv').classList.add('on');
+  document.getElementById('hdrUser').textContent = (isAdmin?'👑 ':'')+name;
+  document.getElementById('mgrVal').textContent = name;
+  if(isAdmin){
+    document.getElementById('adminBanner').style.display='flex';
+    document.getElementById('adminNavBtn').style.display='flex';
+  }
+  setDateTime(); setInterval(setDateTime, 30000);
+  renderZones(); renderChecklist(); renderHistory(); renderStats(); renderPassations();
+  if(isAdmin) renderAdminPanel();
+  updHdr();
+  // Sync en arrière-plan
+  setTimeout(syncData, 500);
+}
+
+function doLogout() {
+  curUser=null; isAdmin=false; statuses={}; curZone='all';
+  document.getElementById('loginPage').style.display='flex';
+  document.getElementById('appDiv').classList.remove('on');
+  document.getElementById('loginPwd').value='';
+  document.getElementById('loginName').value='';
+  document.getElementById('adminBanner').style.display='none';
+  document.getElementById('adminNavBtn').style.display='none';
+  goTab('tournee', document.querySelector('.nb'));
+}
+
+// ══ DATETIME ══
+function setDateTime() {
+  const n = new Date();
+  document.getElementById('dateVal').textContent = n.toLocaleDateString('fr-FR',{day:'2-digit',month:'2-digit',year:'numeric'});
+  document.getElementById('heureVal').textContent = n.toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'});
+}
+
+function updHdr() {
+  const svc = document.getElementById('selSvc').value;
+  document.getElementById('hdrShift').textContent = svc + ' — ' + (curUser||'');
+}
+
+// ══ NAV ══
+function goTab(name, el) {
+  document.querySelectorAll('.sec').forEach(s=>s.classList.remove('on'));
+  document.querySelectorAll('.nb').forEach(b=>b.classList.remove('on'));
+  document.getElementById('sec-'+name).classList.add('on');
+  document.querySelectorAll('[data-tab="'+name+'"]').forEach(b=>b.classList.add('on'));
+  document.getElementById('mainScroll').scrollTo(0,0);
+  if(name==='historique') renderHistory();
+  if(name==='stats') renderStats();
+  if(name==='passation') renderPassations();
+  if(name==='admin' && isAdmin) renderAdminPanel();
+}
+
+// ══ CHECKLIST ══
+function renderZones() {
+  const zs = ['all',...Object.keys(ZONES)];
+  document.getElementById('zonesRow').innerHTML = zs.map(z=>
+    `<button class="zb${z===curZone?' on':''}" onclick="fz('${z}',this)">${z==='all'?'Tout':ZONES[z].label}</button>`
+  ).join('');
+}
+
+function fz(z,el) { curZone=z; document.querySelectorAll('.zb').forEach(b=>b.classList.remove('on')); el.classList.add('on'); renderChecklist(); }
+
+function setStatus(id,st) { statuses[id]=statuses[id]===st?null:st; renderChecklist(); updResult(); }
+
+function renderChecklist() {
+  const fil = curZone==='all' ? checks : checks.filter(c=>c.zone===curZone);
+  const gr = {};
+  fil.forEach(c=>{if(!gr[c.zone])gr[c.zone]=[];gr[c.zone].push(c)});
+  let h = '';
+  Object.entries(gr).forEach(([z,items]) => {
+    const zd = ZONES[z]||{label:z,icon:'•'};
+    h += `<div class="zg"><div class="zh">${zd.icon} ${zd.label}</div>`;
+    items.forEach(item => {
+      const st = statuses[item.id];
+      h += `<div class="cr"><div class="ci"><div class="cl">${item.label}</div><div class="cd">${item.detail}</div></div><div class="cbs"><button class="cb${st==='ok'?' ok':''}" onclick="setStatus('${item.id}','ok')">OK</button><button class="cb${st==='nok'?' nok':''}" onclick="setStatus('${item.id}','nok')">NOK</button><button class="cb${st==='na'?' na':''}" onclick="setStatus('${item.id}','na')">N/A</button></div></div>`;
+    });
+    h += '</div>';
+  });
+  document.getElementById('chkContainer').innerHTML = h;
+  updResult(); updProg();
+}
+
+function updProg() {
+  const done = checks.filter(c=>statuses[c.id]).length;
+  const pct = checks.length ? Math.round(done/checks.length*100) : 0;
+  document.getElementById('progFill').style.width = pct+'%';
+  document.getElementById('progLbl').textContent = done+' / '+checks.length;
+}
+
+function updResult() {
+  const ok=checks.filter(c=>statuses[c.id]==='ok').length;
+  const nok=checks.filter(c=>statuses[c.id]==='nok').length;
+  const na=checks.filter(c=>statuses[c.id]==='na').length;
+  const pct=(ok+nok)>0?Math.round(ok/(ok+nok)*100):0;
+  document.getElementById('resOK').textContent=ok;
+  document.getElementById('resNOK').textContent=nok;
+  document.getElementById('resNA').textContent=na;
+  document.getElementById('resPCT').textContent=(ok+nok)>0?pct+'%':'-%';
+}
+
+// ══ SAVE ══
+async function saveTournee() {
+  const ok=checks.filter(c=>statuses[c.id]==='ok').length;
+  const nok=checks.filter(c=>statuses[c.id]==='nok').length;
+  const na=checks.filter(c=>statuses[c.id]==='na').length;
+  if(ok+nok===0){showAlert('alertErr','Veuillez remplir la checklist !');return}
+  const pct=Math.round(ok/(ok+nok)*100);
+  const nokItems=checks.filter(c=>statuses[c.id]==='nok').map(c=>c.label);
+  const now=new Date();
+  const entry={
+    id:Date.now(),
+    date:now.toLocaleDateString('fr-FR'),
+    time:now.toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'}),
+    manager:curUser,
+    service:document.getElementById('selSvc').value,
+    ok,nok,na,total:checks.length,pct,
+    note:document.getElementById('gNote').value,
+    nokItems,statuses:{...statuses}
+  };
+  history.unshift(entry);
+  saveLocal();
+  showSyncBanner('Enregistrement...');
+  const synced = await apiSet(getSharedData());
+  hideSyncBanner(synced ? '✓ Enregistré & synchronisé' : '✓ Enregistré localement');
+  showAlert('alertOK', `✓ Tournée enregistrée — ${pct}% conforme`);
+  setTimeout(()=>{if(confirm('Tournée enregistrée ! Réinitialiser la checklist ?'))resetTournee()},600);
+}
+
+function resetTournee() {
+  statuses={}; document.getElementById('gNote').value='';
+  curZone='all'; renderZones(); renderChecklist(); setDateTime();
+}
+
+function showAlert(id,msg) {
+  const el=document.getElementById(id);
+  el.textContent=msg; el.classList.add('on');
+  setTimeout(()=>el.classList.remove('on'),4000);
+}
+
+// ══ HISTORY ══
+function toggleFilter() {
+  const fb=document.getElementById('filterBar');
+  const vis=fb.style.display!=='none';
+  fb.style.display=vis?'none':'block';
+  if(!vis){
+    const sel=document.getElementById('filterMgr');
+    const mgrs=[...new Set(history.map(h=>h.manager))];
+    sel.innerHTML='<option value="">Tous les managers</option>'+mgrs.map(m=>`<option value="${m}">${m}</option>`).join('');
+  }
+}
+
+function renderHistory() {
+  const el=document.getElementById('histList');
+  if(!history.length){el.innerHTML='<div class="empty"><div class="empty-i">📋</div><p>Aucune tournée enregistrée</p></div>';return}
+  const fmgr=document.getElementById('filterMgr')?.value||'';
+  let list=isAdmin?history:history.filter(h=>h.manager===curUser);
+  if(fmgr) list=list.filter(h=>h.manager===fmgr);
+  if(!list.length){el.innerHTML='<div class="empty"><div class="empty-i">🔍</div><p>Aucun résultat</p></div>';return}
+  el.innerHTML=list.map(h=>{
+    const cls=h.pct>=90?'b-ok':h.pct>=70?'b-warn':'b-nok';
+    return`<div class="hc"><div class="hh"><div class="hdate">${h.date} — ${h.time}</div><span class="badge ${cls}">${h.pct}%</span></div><div class="hm">${h.service} · <strong>${h.manager}</strong></div><div class="hb"><span class="badge b-ok">${h.ok} OK</span><span class="badge b-nok">${h.nok} NOK</span><span class="badge b-gray">${h.na} N/A</span></div>${h.nokItems&&h.nokItems.length?`<div class="hn">NOK : ${h.nokItems.join(' · ')}</div>`:''}${h.note?`<div style="font-size:12px;color:var(--txt2);margin-top:6px;padding-top:6px;border-top:1px solid var(--bdr)">${h.note}</div>`:''}</div>`;
+  }).join('');
+}
+
+// ══ STATS ══
+function renderStats() {
+  const list=isAdmin?history:history.filter(h=>h.manager===curUser);
+  if(!list.length){document.getElementById('statsGrid').innerHTML='<p style="color:var(--txt2);font-size:13px;grid-column:1/-1;padding:16px 0">Aucune donnée disponible</p>';document.getElementById('statsChart').innerHTML='';document.getElementById('statsMgr').innerHTML='';return}
+  const total=list.length;
+  const avgPct=Math.round(list.reduce((s,h)=>s+h.pct,0)/total);
+  const avgNok=Math.round(list.reduce((s,h)=>s+h.nok,0)/total*10)/10;
+  const best=Math.max(...list.map(h=>h.pct));
+  document.getElementById('statsGrid').innerHTML=`<div class="sc"><div class="sn">${total}</div><div class="sl">Tournées</div></div><div class="sc"><div class="sn">${avgPct}%</div><div class="sl">Conf. moy.</div></div><div class="sc"><div class="sn" style="color:var(--nok)">${avgNok}</div><div class="sl">NOK moy.</div></div><div class="sc"><div class="sn" style="color:var(--ok)">${best}%</div><div class="sl">Meilleure</div></div>`;
+  const last=list.slice(0,8).reverse();
+  if(last.length>1){
+    const W=500,H=100,pad=24;
+    const pts=last.map((h,i)=>({x:pad+i*((W-2*pad)/(last.length-1)),y:H-(h.pct/100)*H,pct:h.pct,date:h.date.slice(0,5)}));
+    const path=pts.map((p,i)=>(i?'L':'M')+p.x+','+p.y).join(' ');
+    document.getElementById('statsChart').innerHTML=`<div class="ct">Évolution conformité</div><div style="overflow-x:auto"><svg viewBox="0 0 ${W} ${H+28}" style="width:100%;min-width:280px;overflow:visible"><defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="0"><stop offset="0%" stop-color="#C8390A"/><stop offset="100%" stop-color="#F5A623"/></linearGradient></defs><path d="${path}" fill="none" stroke="url(#g)" stroke-width="2.5" stroke-linecap="round"/>${pts.map(p=>`<circle cx="${p.x}" cy="${p.y}" r="4.5" fill="url(#g)"/><text x="${p.x}" y="${p.y-9}" text-anchor="middle" font-size="11" font-family="Barlow,sans-serif" font-weight="600" fill="#C8390A">${p.pct}%</text><text x="${p.x}" y="${H+20}" text-anchor="middle" font-size="10" font-family="Barlow,sans-serif" fill="#A09A94">${p.date}</text>`).join('')}</svg></div>`;
+  }else{document.getElementById('statsChart').innerHTML='';}
+  if(isAdmin){
+    const ms={};list.forEach(h=>{if(!ms[h.manager])ms[h.manager]={count:0,sum:0};ms[h.manager].count++;ms[h.manager].sum+=h.pct});
+    document.getElementById('statsMgr').innerHTML=`<div class="ct">Par manager</div>`+Object.entries(ms).sort((a,b)=>b[1].sum/b[1].count-a[1].sum/a[1].count).map(([m,s])=>{const avg=Math.round(s.sum/s.count);const cls=avg>=90?'b-ok':avg>=70?'b-warn':'b-nok';return`<div class="mr"><div class="mn">${m}</div><div style="display:flex;gap:5px;align-items:center"><span class="badge ${cls}">${avg}%</span><span style="font-size:11px;color:var(--txt2)">${s.count} tournée${s.count>1?'s':''}</span></div></div>`;}).join('');
+  }else{document.getElementById('statsMgr').innerHTML='';}
+}
+
+// ══ PASSATION ══
+function onFileSelect(input) {
+  const file=input.files[0]; if(!file)return;
+  document.getElementById('fileSelName').textContent='📎 '+file.name;
+  const reader=new FileReader();
+  reader.onload=e=>{attachData={name:file.name,type:file.type,data:e.target.result}};
+  reader.readAsDataURL(file);
+}
+
+async function savePassation() {
+  const msg=document.getElementById('passMsg').value.trim();
+  if(!msg){showPassAlert('Écrivez un message !');return}
+  const now=new Date();
+  passations.unshift({id:Date.now(),author:curUser,service:document.getElementById('selSvc').value,date:now.toLocaleDateString('fr-FR'),time:now.toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'}),msg,attach:attachData||null});
+  saveLocal();
+  await apiSet(getSharedData());
+  document.getElementById('passMsg').value='';
+  document.getElementById('fileSelName').textContent='';
+  document.getElementById('passFile').value='';
+  attachData=null;
+  showPassAlert('Passation envoyée !');
+  renderPassations();
+}
+
+function showPassAlert(msg){const el=document.getElementById('passAlert');el.textContent=msg;el.classList.add('on');setTimeout(()=>el.classList.remove('on'),3000)}
+
+function renderPassations() {
+  const el=document.getElementById('passationList');
+  if(!passations.length){el.innerHTML='<div class="empty"><div class="empty-i">🔄</div><p>Aucune passation</p></div>';return}
+  el.innerHTML=passations.map(p=>`<div class="pc"><div class="ph"><div class="pa">👤 ${p.author}</div><div class="pt">${p.date} ${p.time}</div></div><div class="ps">Service : ${p.service}</div><div class="pm">${p.msg.replace(/\n/g,'<br>')}</div>${p.attach?`<a class="patt" href="${p.attach.data}" download="${p.attach.name}"><span class="pi">${p.attach.type.startsWith('image')?'🖼️':'📄'}</span><span class="pn">${p.attach.name}</span><span style="font-size:11px;color:var(--txt3)">Télécharger</span></a>`:''}</div>`).join('');
+}
+
+// ══ ADMIN PANEL ══
+function renderAdminPanel() {
+  applyConfig();
+  renderChecklistEditor();
+  renderManagerEditor();
+  const total=history.length;
+  const avgPct=total?Math.round(history.reduce((s,h)=>s+h.pct,0)/total):0;
+  document.getElementById('adminStats').innerHTML=`<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:7px"><div class="sc"><div class="sn">${total}</div><div class="sl">Tournées</div></div><div class="sc"><div class="sn">${avgPct}%</div><div class="sl">Conf. globale</div></div><div class="sc"><div class="sn">${passations.length}</div><div class="sl">Passations</div></div></div>`;
+}
+
+function renderManagerEditor() {
+  const el=document.getElementById('mgrEditor');
+  const allMgrs=CFG.managers||[];
+  el.innerHTML=allMgrs.map((m,i)=>`<div class="ce"><input value="${m}" onchange="CFG.managers[${i}]=this.value" style="flex:1;font-family:'Barlow',sans-serif;font-size:13px;background:var(--bg2);border:1px solid var(--bdr2);border-radius:7px;padding:6px 10px;color:var(--txt);outline:none"/><button onclick="removeMgr(${i})" style="background:none;border:none;cursor:pointer;color:var(--nok);font-size:16px">✕</button></div>`).join('');
+}
+
+function addManager(){CFG.managers.push('Nouveau manager');renderManagerEditor()}
+function removeMgr(i){if(!confirm('Supprimer ce manager ?'))return;CFG.managers.splice(i,1);renderManagerEditor()}
+
+async function saveManagers() {
+  saveLocal();
+  await apiSet(getSharedData());
+  renderLoginSelect();
+  const a=document.getElementById('mgrAlert');a.textContent='✓ Managers sauvegardés !';a.classList.add('on');
+  setTimeout(()=>a.classList.remove('on'),2500);
+}
+
+function renderChecklistEditor() {
+  const el=document.getElementById('checklistEditor');
+  el.innerHTML=checks.map((c,i)=>`<div class="ce"><select onchange="checks[${i}].zone=this.value" style="font-family:'Barlow',sans-serif;font-size:11px;background:var(--bg2);border:1px solid var(--bdr2);border-radius:6px;padding:4px 6px;color:var(--txt);outline:none;flex-shrink:0">${Object.keys(ZONES).map(z=>`<option value="${z}"${c.zone===z?' selected':''}>${ZONES[z].label}</option>`).join('')}</select><input class="ce input" value="${c.label}" oninput="checks[${i}].label=this.value" style="flex:1;font-family:'Barlow',sans-serif;font-size:13px;background:var(--bg2);border:1px solid var(--bdr2);border-radius:7px;padding:6px 10px;color:var(--txt);outline:none"/><button onclick="removeCheck(${i})" style="background:none;border:none;cursor:pointer;color:var(--nok);font-size:16px">✕</button></div>`).join('');
+}
+
+function addCheckItem(){checks.push({id:'c_'+Date.now(),zone:'cuisine',label:'Nouveau point',detail:''});renderChecklistEditor()}
+function removeCheck(i){if(!confirm('Supprimer ce point ?'))return;checks.splice(i,1);renderChecklistEditor()}
+
+async function saveChecklist() {
+  saveLocal();
+  await apiSet(getSharedData());
+  renderChecklist();
+  const a=document.getElementById('clAlert');a.textContent='✓ Checklist sauvegardée !';a.classList.add('on');
+  setTimeout(()=>a.classList.remove('on'),2500);
+}
+
+async function saveRestConfig() {
+  CFG.restaurant=document.getElementById('cfgRestName').value||'BRK36';
+  CFG.adminPwd=document.getElementById('cfgAdminPwd').value||'BRK36!';
+  CFG.mgrPwd=document.getElementById('cfgMgrPwd').value||'BRK36?';
+  applyConfig();
+  saveLocal();
+  await apiSet(getSharedData());
+  const a=document.getElementById('cfgAlert');a.textContent='✓ Configuration sauvegardée !';a.classList.add('on');
+  setTimeout(()=>a.classList.remove('on'),2500);
+}
+
+// ══ EXPORT ══
+function exportCSV() {
+  const list=isAdmin?history:history.filter(h=>h.manager===curUser);
+  if(!list.length){alert('Aucune donnée à exporter');return}
+  const rows=[['Date','Heure','Manager','Service','OK','NOK','N/A','Conformité (%)','Points NOK','Observations']];
+  list.forEach(h=>rows.push([h.date,h.time,h.manager,h.service,h.ok,h.nok,h.na,h.pct,(h.nokItems||[]).join(' / '),h.note||'']));
+  const csv=rows.map(r=>r.map(v=>`"${String(v).replace(/"/g,'""')}"`).join(',')).join('\n');
+  const blob=new Blob(['\uFEFF'+csv],{type:'text/csv;charset=utf-8'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');
+  a.href=url;a.download='BRK36_'+new Date().toISOString().slice(0,10)+'.csv';
+  document.body.appendChild(a);a.click();document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+
+async function clearAllData() {
+  if(!confirm('⚠️ Effacer TOUTES les données ?'))return;
+  if(!confirm('Dernière confirmation — action irréversible !'))return;
+  history=[];passations=[];
+  saveLocal();
+  await apiSet(getSharedData());
+  renderHistory();renderStats();renderPassations();renderAdminPanel();
+  alert('Données effacées.');
+}
+
+// ══ START ══
+init();
+</script>
+</body>
+</html>
