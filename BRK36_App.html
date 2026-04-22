@@ -1,0 +1,1002 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="theme-color" content="#C8390A">
+<title>BRK36 — Tours de Contrôle</title>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700;800;900&family=Barlow:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bk:#C8390A;--bk2:#E8470D;--bkd:#8B2500;--bkl:#FFF0EB;
+  --gold:#F5A623;--ok:#1E7A3E;--okb:#E8F5EE;
+  --nok:#C0392B;--nokb:#FDECEA;--na:#5D6D7E;--nab:#EEF0F2;
+  --adm:#3949AB;--admb:#E8EAF6;
+  --bg:#FAFAF8;--bg2:#F2F0ED;--bg3:#E8E5E0;
+  --txt:#1A1714;--txt2:#6B6560;--txt3:#A09A94;
+  --bdr:rgba(0,0,0,0.08);--bdr2:rgba(0,0,0,0.14);
+  --sh:0 2px 12px rgba(0,0,0,0.08);--shl:0 8px 32px rgba(0,0,0,0.14);
+  --r:12px;--rl:18px;
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html,body{height:100%;font-family:'Barlow',sans-serif;background:var(--bg);color:var(--txt);font-size:15px}
+body{display:flex;flex-direction:column;min-height:100vh}
+
+/* LOGIN */
+.login-wrap{min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;background:linear-gradient(145deg,#1a0a00 0%,#8B2500 50%,#C8390A 100%);padding:24px}
+.login-logo{width:80px;height:80px;background:rgba(255,255,255,0.12);border-radius:24px;display:flex;align-items:center;justify-content:center;font-family:'Barlow Condensed',sans-serif;font-weight:900;font-size:28px;color:#fff;margin-bottom:12px;border:2px solid rgba(255,255,255,0.2);box-shadow:0 8px 32px rgba(0,0,0,0.3)}
+.login-title{font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:30px;color:#fff;margin-bottom:4px;text-align:center}
+.login-sub{font-size:13px;color:rgba(255,255,255,0.6);margin-bottom:32px;text-align:center}
+.login-card{background:#fff;border-radius:var(--rl);padding:28px 24px;width:100%;max-width:360px;box-shadow:0 20px 60px rgba(0,0,0,0.3)}
+.login-card h2{font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:20px;margin-bottom:20px;color:var(--txt)}
+.lfield{margin-bottom:14px}
+.lfield label{font-size:11px;font-weight:600;color:var(--txt2);letter-spacing:0.4px;text-transform:uppercase;display:block;margin-bottom:6px}
+.lfield select,.lfield input{width:100%;padding:12px 14px;font-family:'Barlow',sans-serif;font-size:15px;background:var(--bg2);border:1.5px solid var(--bdr2);border-radius:var(--r);color:var(--txt);outline:none;transition:border-color 0.15s}
+.lfield select:focus,.lfield input:focus{border-color:var(--bk)}
+.lbtn{width:100%;padding:14px;background:linear-gradient(135deg,var(--bkd),var(--bk));color:#fff;border:none;border-radius:var(--r);font-family:'Barlow Condensed',sans-serif;font-size:18px;font-weight:700;cursor:pointer;margin-top:6px;box-shadow:0 4px 16px rgba(200,57,10,0.35);transition:transform 0.1s}
+.lbtn:active{transform:scale(0.98)}
+.lerr{background:var(--nokb);color:var(--nok);padding:10px 14px;border-radius:var(--r);font-size:13px;font-weight:600;margin-top:10px;display:none}
+.lerr.on{display:block}
+
+/* APP */
+.app-wrap{display:none;flex-direction:column;min-height:100vh}
+.app-wrap.on{display:flex}
+
+/* HEADER */
+.header{background:linear-gradient(135deg,var(--bkd) 0%,var(--bk) 60%,var(--bk2) 100%);padding:0 14px;height:54px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;position:sticky;top:0;z-index:100}
+.hl{display:flex;align-items:center;gap:9px}
+.hlogo{width:32px;height:32px;background:rgba(255,255,255,0.15);border-radius:8px;display:flex;align-items:center;justify-content:center;font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:12px;color:#fff}
+.htitle{font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:16px;color:#fff}
+.hsub{font-size:10px;color:rgba(255,255,255,0.65);margin-top:1px}
+.hr{display:flex;align-items:center;gap:7px}
+.huser{background:rgba(255,255,255,0.15);color:#fff;font-size:11px;font-weight:600;padding:4px 10px;border-radius:20px}
+.hout{background:rgba(255,255,255,0.1);border:none;color:rgba(255,255,255,0.7);font-size:16px;cursor:pointer;border-radius:7px;width:28px;height:28px;display:flex;align-items:center;justify-content:center}
+
+/* MAIN */
+.main{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch}
+.content{padding:14px;max-width:800px;margin:0 auto;padding-bottom:90px}
+
+/* BOTTOM NAV */
+.bnav{position:sticky;bottom:0;background:#fff;border-top:1.5px solid var(--bdr2);display:flex;z-index:100;padding-bottom:env(safe-area-inset-bottom);box-shadow:0 -4px 20px rgba(0,0,0,0.08);flex-shrink:0}
+.nbtn{flex:1;display:flex;flex-direction:column;align-items:center;padding:7px 2px 9px;border:none;background:transparent;color:var(--txt3);cursor:pointer;font-family:'Barlow',sans-serif;gap:2px;position:relative;transition:color 0.15s;min-width:0}
+.nbtn.on{color:var(--bk)}
+.nbtn.on::after{content:'';position:absolute;top:0;left:20%;right:20%;height:3px;background:var(--bk);border-radius:0 0 3px 3px}
+.ni{font-size:20px;line-height:1}
+.nl{font-size:9px;font-weight:600;letter-spacing:0.2px;white-space:nowrap}
+
+/* SECTIONS */
+.sec{display:none}.sec.on{display:block}
+
+/* CARDS */
+.card{background:#fff;border-radius:var(--rl);padding:14px 15px;margin-bottom:10px;box-shadow:var(--sh);border:1px solid var(--bdr)}
+.ctitle{font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:12px;color:var(--txt2);letter-spacing:0.5px;text-transform:uppercase;margin-bottom:10px;padding-bottom:8px;border-bottom:1px solid var(--bdr);display:flex;align-items:center;justify-content:space-between}
+
+/* INFO GRID */
+.igrid{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-bottom:10px}
+.icell{background:var(--bg2);border-radius:var(--r);padding:10px 12px}
+.icell label{font-size:10px;font-weight:600;letter-spacing:0.4px;color:var(--txt3);text-transform:uppercase;display:block;margin-bottom:3px}
+.icell .v{font-family:'Barlow Condensed',sans-serif;font-size:18px;font-weight:700;color:var(--txt)}
+.icell select,.icell input{font-family:'Barlow',sans-serif;font-size:14px;font-weight:600;background:transparent;border:none;color:var(--txt);width:100%;outline:none;cursor:pointer}
+.icell.hl{background:var(--bkl)}.icell.hl label{color:var(--bkd)}
+
+/* PROGRESS */
+.pbar-w{margin-bottom:12px}
+.pbar-t{display:flex;justify-content:space-between;font-size:11px;color:var(--txt2);margin-bottom:5px}
+.pbar{height:6px;background:var(--bg3);border-radius:3px;overflow:hidden}
+.pfill{height:100%;background:linear-gradient(90deg,var(--bk),var(--gold));border-radius:3px;transition:width 0.3s}
+
+/* ZONES */
+.zones{display:flex;gap:5px;margin-bottom:10px;overflow-x:auto;padding-bottom:4px}
+.zones::-webkit-scrollbar{display:none}
+.zbtn{padding:5px 11px;font-size:11px;font-weight:600;border-radius:20px;border:1.5px solid var(--bdr2);background:#fff;color:var(--txt2);cursor:pointer;white-space:nowrap;flex-shrink:0;font-family:'Barlow',sans-serif;transition:all 0.12s}
+.zbtn.on{background:var(--bk);color:#fff;border-color:var(--bk)}
+
+/* CHECKLIST */
+.zgrp{margin-bottom:10px}
+.zhdr{font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:12px;letter-spacing:0.5px;text-transform:uppercase;color:var(--txt2);margin-bottom:5px;padding:5px 0;display:flex;align-items:center;gap:5px}
+.crow{display:flex;align-items:center;gap:7px;padding:9px 12px;background:#fff;border-radius:var(--r);margin-bottom:3px;border:1px solid var(--bdr)}
+.cinfo{flex:1;min-width:0}
+.clbl{font-size:13px;font-weight:600;color:var(--txt)}
+.cdet{font-size:11px;color:var(--txt3);margin-top:1px}
+.cbtns{display:flex;gap:3px;flex-shrink:0}
+.cb{font-size:11px;font-weight:700;padding:4px 8px;border-radius:7px;border:1.5px solid var(--bdr);cursor:pointer;background:transparent;font-family:'Barlow',sans-serif;color:var(--txt2);transition:all 0.1s}
+.cb.ok{background:var(--okb);color:var(--ok);border-color:var(--ok)}
+.cb.nok{background:var(--nokb);color:var(--nok);border-color:var(--nok)}
+.cb.na{background:var(--nab);color:var(--na);border-color:var(--na)}
+
+/* RESULT */
+.rbar{background:linear-gradient(135deg,var(--bkd),var(--bk));border-radius:var(--rl);padding:14px 18px;margin-bottom:10px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;box-shadow:var(--shl)}
+.rscores{display:flex;gap:14px}
+.rs .n{font-family:'Barlow Condensed',sans-serif;font-size:26px;font-weight:800;color:#fff}
+.rs .l{font-size:9px;font-weight:600;color:rgba(255,255,255,0.55);text-transform:uppercase;letter-spacing:0.4px}
+.rpct{font-family:'Barlow Condensed',sans-serif;font-size:36px;font-weight:800;color:var(--gold)}
+
+/* BUTTONS */
+.btn-main{width:100%;padding:14px;background:linear-gradient(135deg,var(--ok),#27AE60);color:#fff;border:none;border-radius:var(--rl);font-family:'Barlow Condensed',sans-serif;font-size:17px;font-weight:700;cursor:pointer;margin-bottom:6px;box-shadow:0 4px 14px rgba(30,122,62,0.28);transition:transform 0.1s}
+.btn-main:active{transform:scale(0.98)}
+.btn-sec{background:transparent;color:var(--txt2);border:1.5px solid var(--bdr2);border-radius:var(--r);padding:9px 14px;font-size:13px;font-weight:600;cursor:pointer;font-family:'Barlow',sans-serif}
+.btn-admin{background:var(--admb);color:var(--adm);border:1.5px solid var(--adm);border-radius:var(--r);padding:8px 14px;font-size:12px;font-weight:600;cursor:pointer;font-family:'Barlow',sans-serif}
+.btn-danger{background:var(--nokb);color:var(--nok);border:1.5px solid var(--nok);border-radius:var(--r);padding:9px 14px;font-size:13px;font-weight:600;cursor:pointer;font-family:'Barlow',sans-serif;width:100%}
+
+/* BADGES */
+.badge{font-size:11px;font-weight:700;padding:3px 9px;border-radius:20px;display:inline-block}
+.b-ok{background:var(--okb);color:var(--ok)}
+.b-nok{background:var(--nokb);color:var(--nok)}
+.b-warn{background:#FEF9E7;color:#B7770D}
+.b-gray{background:var(--bg2);color:var(--txt2)}
+.b-adm{background:var(--admb);color:var(--adm)}
+
+/* HISTORY */
+.hcard{background:#fff;border-radius:var(--rl);padding:13px 15px;margin-bottom:8px;border:1px solid var(--bdr);box-shadow:var(--sh)}
+.hhead{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:5px;flex-wrap:wrap;gap:4px}
+.hdate{font-family:'Barlow Condensed',sans-serif;font-size:15px;font-weight:700}
+.hmeta{font-size:12px;color:var(--txt2);margin-bottom:6px}
+.hbadges{display:flex;gap:4px;flex-wrap:wrap}
+.hnok{font-size:11px;color:var(--nok);margin-top:5px;padding-top:5px;border-top:1px solid var(--bdr)}
+
+/* STATS */
+.sgrid{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-bottom:10px}
+.scard{background:#fff;border-radius:var(--rl);padding:12px;border:1px solid var(--bdr);box-shadow:var(--sh);text-align:center}
+.snum{font-family:'Barlow Condensed',sans-serif;font-size:30px;font-weight:800;color:var(--bk)}
+.slbl{font-size:10px;color:var(--txt2);font-weight:600;text-transform:uppercase;letter-spacing:0.4px;margin-top:2px}
+.mrow{display:flex;align-items:center;gap:8px;padding:9px 0;border-bottom:1px solid var(--bdr)}
+.mrow:last-child{border-bottom:none}
+.mname{flex:1;font-weight:600;font-size:14px}
+
+/* ADMIN BANNER */
+.adm-banner{background:linear-gradient(135deg,#1A237E,#3949AB);border-radius:var(--rl);padding:13px 15px;margin-bottom:10px;display:flex;align-items:center;gap:10px}
+.adm-banner .icon{font-size:22px}
+.adm-banner .txt{color:#fff}
+.adm-banner .txt strong{font-size:14px;display:block}
+.adm-banner .txt span{font-size:11px;opacity:0.8}
+
+/* PASSATION */
+.pass-card{background:#fff;border-radius:var(--rl);padding:15px;margin-bottom:10px;border:2px solid var(--bkl);box-shadow:var(--shl)}
+.pass-header{display:flex;align-items:center;gap:10px;margin-bottom:12px;padding-bottom:10px;border-bottom:1px solid var(--bdr)}
+.pass-avatar{width:40px;height:40px;border-radius:50%;background:linear-gradient(135deg,var(--bkd),var(--bk));display:flex;align-items:center;justify-content:center;font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:16px;color:#fff;flex-shrink:0}
+.pass-info strong{font-size:14px;font-weight:700;display:block}
+.pass-info span{font-size:11px;color:var(--txt2)}
+.pass-msg{font-size:14px;color:var(--txt);line-height:1.6;margin-bottom:10px;background:var(--bg2);padding:12px;border-radius:var(--r)}
+.pass-img{width:100%;border-radius:var(--r);margin-top:8px;border:1px solid var(--bdr);max-height:300px;object-fit:cover}
+.pass-file{display:flex;align-items:center;gap:8px;padding:10px 12px;background:var(--bg2);border-radius:var(--r);margin-top:8px;font-size:13px;color:var(--txt);text-decoration:none}
+.upload-zone{border:2px dashed var(--bdr2);border-radius:var(--r);padding:20px;text-align:center;cursor:pointer;transition:border-color 0.15s;margin-top:8px}
+.upload-zone:hover{border-color:var(--bk)}
+.upload-zone input{display:none}
+.upload-preview{margin-top:10px;position:relative}
+.upload-preview img{width:100%;border-radius:var(--r);max-height:200px;object-fit:cover}
+.upload-preview .rm{position:absolute;top:6px;right:6px;background:rgba(0,0,0,0.6);color:#fff;border:none;border-radius:50%;width:26px;height:26px;font-size:14px;cursor:pointer;display:flex;align-items:center;justify-content:center}
+
+/* CHECKLIST EDIT */
+.edit-row{display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid var(--bdr)}
+.edit-row:last-child{border-bottom:none}
+.edit-row input{flex:1;font-family:'Barlow',sans-serif;font-size:13px;background:var(--bg2);border:1px solid var(--bdr);border-radius:7px;padding:6px 10px;color:var(--txt);outline:none}
+.edit-row input:focus{border-color:var(--bk)}
+.edit-row select{font-family:'Barlow',sans-serif;font-size:12px;background:var(--bg2);border:1px solid var(--bdr);border-radius:7px;padding:5px 8px;color:var(--txt);outline:none}
+.rm-btn{background:none;border:none;cursor:pointer;color:var(--nok);font-size:18px;flex-shrink:0}
+
+/* ALERT */
+.alert{padding:10px 14px;border-radius:var(--r);font-size:13px;font-weight:600;margin-bottom:8px;display:none}
+.alert.on{display:block}
+.alert-ok{background:var(--okb);color:var(--ok)}
+.alert-err{background:var(--nokb);color:var(--nok)}
+
+/* EMPTY */
+.empty{text-align:center;padding:40px 16px;color:var(--txt2)}
+.empty-icon{font-size:42px;margin-bottom:10px}
+
+textarea{width:100%;font-family:'Barlow',sans-serif;font-size:13px;background:var(--bg2);border:none;border-radius:var(--r);padding:10px 12px;color:var(--txt);resize:vertical;min-height:70px;outline:none;margin-top:6px}
+input[type=text],input[type=password]{font-family:'Barlow',sans-serif}
+
+@media(min-width:600px){.igrid{grid-template-columns:repeat(4,1fr)}.sgrid{grid-template-columns:repeat(4,1fr)}}
+</style>
+</head>
+<body>
+
+<!-- ═══ LOGIN ═══ -->
+<div class="login-wrap" id="loginWrap">
+  <div class="login-logo">BK</div>
+  <div class="login-title">BRK36</div>
+  <div class="login-sub">Tours de Contrôle</div>
+  <div class="login-card">
+    <h2>Connexion</h2>
+    <div class="lfield">
+      <label>Votre nom</label>
+      <select id="loginName">
+        <option value="">-- Choisir --</option>
+        <optgroup label="Administrateurs">
+          <option value="Clement">Clement</option>
+          <option value="Valentin">Valentin</option>
+        </optgroup>
+        <optgroup label="Managers">
+          <option value="Enock">Enock</option>
+          <option value="Brice">Brice</option>
+          <option value="Cecilia">Cecilia</option>
+          <option value="Anais">Anais</option>
+          <option value="Gwendeline">Gwendeline</option>
+          <option value="Karine">Karine</option>
+          <option value="Chloé">Chloé</option>
+        </optgroup>
+      </select>
+    </div>
+    <div class="lfield">
+      <label>Mot de passe</label>
+      <input type="password" id="loginPwd" placeholder="••••••••" onkeydown="if(event.key==='Enter')doLogin()"/>
+    </div>
+    <button class="lbtn" onclick="doLogin()">Se connecter →</button>
+    <div class="lerr" id="loginErr">Mot de passe incorrect</div>
+  </div>
+</div>
+
+<!-- ═══ APP ═══ -->
+<div class="app-wrap" id="appWrap">
+
+  <div class="header">
+    <div class="hl">
+      <div class="hlogo">BK</div>
+      <div><div class="htitle">BRK36</div><div class="hsub">Tours de Contrôle</div></div>
+    </div>
+    <div class="hr">
+      <div class="huser" id="hdrUser"></div>
+      <button class="hout" onclick="doLogout()" title="Déconnexion">⏏</button>
+    </div>
+  </div>
+
+  <div class="main" id="mainScroll">
+  <div class="content">
+
+    <!-- ── TOURNÉE ── -->
+    <div id="sec-tournee" class="sec on">
+      <div id="admBanner" style="display:none" class="adm-banner" >
+        <div class="icon">👑</div>
+        <div class="txt"><strong>Mode Administrateur</strong><span>Accès complet</span></div>
+      </div>
+
+      <div class="igrid">
+        <div class="icell"><label>Date</label><div class="v" id="dateVal"></div></div>
+        <div class="icell"><label>Heure</label><div class="v" id="heureVal"></div></div>
+        <div class="icell hl"><label>Manager</label><div style="font-size:15px;font-weight:700;color:var(--bk);padding-top:2px" id="managerVal"></div></div>
+        <div class="icell hl">
+          <label>Service ▼</label>
+          <select id="selService">
+            <option>Ouverture</option><option selected>Midi</option>
+            <option>Après-midi</option><option>Soir</option>
+            <option>Fermeture</option><option>Nuit</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="pbar-w">
+        <div class="pbar-t"><span>Progression</span><span id="progLbl">0 / 0</span></div>
+        <div class="pbar"><div class="pfill" id="progFill" style="width:0%"></div></div>
+      </div>
+
+      <div class="zones" id="zonesRow"></div>
+      <div id="chkContainer"></div>
+
+      <div class="rbar">
+        <div class="rscores">
+          <div class="rs"><div class="n" id="resOK">0</div><div class="l">OK</div></div>
+          <div class="rs"><div class="n" id="resNOK">0</div><div class="l">NOK</div></div>
+          <div class="rs"><div class="n" id="resNA">0</div><div class="l">N/A</div></div>
+        </div>
+        <div class="rpct" id="resPCT">-%</div>
+      </div>
+
+      <div class="card">
+        <div class="ctitle">Observations générales</div>
+        <textarea id="gNote" placeholder="Anomalies, remarques, actions correctives..."></textarea>
+      </div>
+
+      <div class="alert alert-ok" id="alertOK"></div>
+      <div class="alert alert-err" id="alertErr"></div>
+      <button class="btn-main" onclick="saveTournee()">✓ ENREGISTRER LA TOURNÉE</button>
+      <button class="btn-sec" style="width:100%;margin-bottom:8px" onclick="resetTournee()">↺ Réinitialiser</button>
+    </div>
+
+    <!-- ── HISTORIQUE ── -->
+    <div id="sec-historique" class="sec">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;flex-wrap:wrap;gap:8px">
+        <span style="font-family:'Barlow Condensed',sans-serif;font-size:20px;font-weight:700">Historique</span>
+        <div style="display:flex;gap:6px">
+          <button class="btn-sec" id="filterBtn" onclick="toggleFilter()" style="font-size:11px;padding:6px 11px">Filtrer ▼</button>
+          <button class="btn-sec" onclick="exportCSV()" style="font-size:11px;padding:6px 11px">⬇ CSV</button>
+        </div>
+      </div>
+      <div id="filterBar" style="display:none;margin-bottom:10px">
+        <select id="filterMgr" onchange="renderHistory()" style="width:100%;padding:9px 12px;font-family:'Barlow',sans-serif;font-size:13px;background:var(--bg2);border:1px solid var(--bdr2);border-radius:var(--r);color:var(--txt);outline:none">
+          <option value="">Tous les managers</option>
+        </select>
+      </div>
+      <div id="histList"></div>
+    </div>
+
+    <!-- ── STATS ── -->
+    <div id="sec-stats" class="sec">
+      <div style="font-family:'Barlow Condensed',sans-serif;font-size:20px;font-weight:700;margin-bottom:12px">Statistiques</div>
+      <div class="sgrid" id="statsGrid"></div>
+      <div id="statsChart" class="card"></div>
+      <div id="statsMgr" class="card"></div>
+    </div>
+
+    <!-- ── PASSATION ── -->
+    <div id="sec-passation" class="sec">
+      <div style="font-family:'Barlow Condensed',sans-serif;font-size:20px;font-weight:700;margin-bottom:4px">Passation de service</div>
+      <p style="font-size:12px;color:var(--txt2);margin-bottom:14px">Laissez un message au manager suivant</p>
+
+      <!-- Dernière passation reçue -->
+      <div id="lastPassation"></div>
+
+      <!-- Nouvelle passation -->
+      <div class="card">
+        <div class="ctitle">📝 Nouvelle passation</div>
+        <textarea id="passMsg" placeholder="Informations importantes pour le prochain service : stock, problèmes, tâches en cours..." style="min-height:100px"></textarea>
+
+        <div style="margin-top:10px">
+          <label style="font-size:11px;font-weight:600;color:var(--txt2);text-transform:uppercase;letter-spacing:0.4px;display:block;margin-bottom:6px">Pièce jointe (photo ou fichier)</label>
+          <div class="upload-zone" onclick="document.getElementById('passFile').click()">
+            <input type="file" id="passFile" accept="image/*,.pdf,.doc,.docx,.txt" onchange="handleFileUpload(event)"/>
+            <div style="font-size:24px;margin-bottom:6px">📎</div>
+            <div style="font-size:13px;font-weight:600;color:var(--txt2)">Appuyez pour joindre</div>
+            <div style="font-size:11px;color:var(--txt3);margin-top:3px">Photo, PDF, Word...</div>
+          </div>
+          <div id="uploadPreview" class="upload-preview" style="display:none"></div>
+        </div>
+
+        <div class="alert alert-ok" id="passAlert" style="margin-top:8px"></div>
+        <button class="btn-main" style="margin-top:10px" onclick="savePassation()">📤 Envoyer la passation</button>
+      </div>
+
+      <!-- Historique passations -->
+      <div class="card">
+        <div class="ctitle">Historique des passations</div>
+        <div id="passHistory"></div>
+      </div>
+    </div>
+
+    <!-- ── ADMIN ── -->
+    <div id="sec-admin" class="sec">
+      <div class="adm-banner" style="margin-bottom:12px">
+        <div class="icon">👑</div>
+        <div class="txt"><strong>Panneau Administrateur</strong><span>BRK36 — Accès complet</span></div>
+      </div>
+
+      <!-- Checklist éditable -->
+      <div class="card">
+        <div class="ctitle">
+          <span>✏️ Modifier la checklist</span>
+          <button class="btn-admin" onclick="addCheckItem()" style="font-size:11px;padding:4px 10px">+ Ajouter</button>
+        </div>
+        <div id="checklistEditor"></div>
+        <button class="btn-main" style="margin-top:10px;background:linear-gradient(135deg,var(--bkd),var(--bk))" onclick="saveChecklist()">💾 Enregistrer la checklist</button>
+      </div>
+
+      <!-- Tout l'historique -->
+      <div class="card">
+        <div class="ctitle">
+          <span>📁 Toutes les tournées</span>
+          <span id="adminHistCount" class="badge b-gray">0</span>
+        </div>
+        <div style="display:flex;gap:6px;margin-bottom:10px;flex-wrap:wrap">
+          <select id="adminFilterMgr" onchange="renderAdminHist()" style="flex:1;padding:8px 10px;font-family:'Barlow',sans-serif;font-size:12px;background:var(--bg2);border:1px solid var(--bdr2);border-radius:var(--r);color:var(--txt);outline:none">
+            <option value="">Tous les managers</option>
+          </select>
+          <button class="btn-sec" onclick="exportCSV()" style="font-size:11px;padding:7px 12px">⬇ CSV</button>
+        </div>
+        <div id="adminHistList"></div>
+      </div>
+
+      <!-- Stats globales -->
+      <div class="card">
+        <div class="ctitle">📊 Stats globales</div>
+        <div id="adminStats"></div>
+      </div>
+
+      <!-- Gestion -->
+      <div class="card">
+        <div class="ctitle">⚠️ Gestion des données</div>
+        <button class="btn-danger" onclick="clearAllData()">🗑 Effacer toutes les données</button>
+      </div>
+    </div>
+
+  </div>
+  </div>
+
+  <nav class="bnav">
+    <button class="nbtn on" onclick="goTab('tournee',this)" data-tab="tournee"><span class="ni">📋</span><span class="nl">Tournée</span></button>
+    <button class="nbtn" onclick="goTab('historique',this)" data-tab="historique"><span class="ni">📁</span><span class="nl">Historique</span></button>
+    <button class="nbtn" onclick="goTab('stats',this)" data-tab="stats"><span class="ni">📊</span><span class="nl">Stats</span></button>
+    <button class="nbtn" onclick="goTab('passation',this)" data-tab="passation"><span class="ni">🔄</span><span class="nl">Passation</span></button>
+    <button class="nbtn" id="adminNavBtn" onclick="goTab('admin',this)" data-tab="admin" style="display:none"><span class="ni">👑</span><span class="nl">Admin</span></button>
+  </nav>
+</div>
+
+<script>
+// ══════════════════════════════════════
+// CONFIG
+// ══════════════════════════════════════
+const ADMINS = ['Clement','Valentin'];
+const ADMIN_PWD = 'BRK36!';
+const MGR_PWD = 'BRK36?';
+
+const ZONES = {
+  cuisine:{label:'Cuisine',icon:'🍔'},
+  comptoir:{label:'Comptoir',icon:'🧾'},
+  salle:{label:'Salle',icon:'🪑'},
+  securite:{label:'Sécurité',icon:'🔒'},
+  hygiene:{label:'Hygiène',icon:'🧼'},
+};
+
+const DEFAULT_CHECKS = [
+  {id:'c1',zone:'cuisine',label:'Températures équipements',detail:'Friteuses, grills, bain-marie, chambres froides'},
+  {id:'c2',zone:'cuisine',label:'Propreté des postes de travail',detail:'Plans de travail, équipements, sol cuisine'},
+  {id:'c3',zone:'cuisine',label:'DLC / DLUO des produits',detail:'Vérifier les dates, étiquetage FIFO'},
+  {id:'c4',zone:'cuisine',label:'Niveaux des stocks',detail:'Viandes, pains, sauces, légumes'},
+  {id:'c5',zone:'cuisine',label:'Fonctionnement équipements',detail:'Friteuses, grills, toasters, micro-ondes'},
+  {id:'c6',zone:'cuisine',label:'Traçabilité & enregistrements',detail:'Feuilles de relevé de températures remplies'},
+  {id:'c7',zone:'comptoir',label:'Propreté comptoir & caisses',detail:'Surfaces, écrans, claviers, plateaux'},
+  {id:'c8',zone:'comptoir',label:'Affichage prix & promotions',detail:'Menus à jour, PLV correcte'},
+  {id:'c9',zone:'comptoir',label:'Stock emballages / consommables',detail:'Sacs, gobelets, plateaux, serviettes'},
+  {id:'c10',zone:'comptoir',label:"Temps d'attente clients",detail:'Objectif < 3 min au comptoir'},
+  {id:'c11',zone:'comptoir',label:'Fonds de caisse',detail:'Vérification des caisses'},
+  {id:'c12',zone:'salle',label:'Propreté tables & chaises',detail:'Tables essuyées, chaises en place'},
+  {id:'c13',zone:'salle',label:'Sol de la salle propre',detail:'Nettoyage, absence de déchets'},
+  {id:'c14',zone:'salle',label:'Poubelles & tri des déchets',detail:'< 2/3 pleines, tri sélectif correct'},
+  {id:'c15',zone:'salle',label:'Toilettes clients',detail:'Propreté, savon, papier, poubelle'},
+  {id:'c16',zone:'securite',label:'Issues de secours dégagées',detail:'Accès libre, signalisation visible'},
+  {id:'c17',zone:'securite',label:'Extincteurs accessibles',detail:'Non obstrués, contrôle à jour'},
+  {id:'c18',zone:'securite',label:'Éclairage de sécurité',detail:'Blocs de secours fonctionnels'},
+  {id:'c19',zone:'hygiene',label:'Tenue vestimentaire équipe',detail:'Uniforme, charlotte, gants si requis'},
+  {id:'c20',zone:'hygiene',label:'Lavage des mains',detail:'Protocole respecté aux postes clés'},
+  {id:'c21',zone:'hygiene',label:'Produits nettoyage rangés',detail:'Armoire fermée, étiquetés, séparés'},
+  {id:'c22',zone:'hygiene',label:'Lave-mains opérationnel',detail:'Savon, essuie-mains disponibles'},
+];
+
+// ══════════════════════════════════════
+// STATE
+// ══════════════════════════════════════
+let currentUser = null;
+let isAdmin = false;
+let statuses = {};
+let curZone = 'all';
+let history = [];
+let passations = [];
+let checks = [];
+let uploadedFile = null;
+let uploadedFileData = null;
+
+// ══════════════════════════════════════
+// INIT
+// ══════════════════════════════════════
+function init() {
+  loadData();
+  const saved = localStorage.getItem('brk36_session');
+  if(saved) {
+    const s = JSON.parse(saved);
+    currentUser = s.user;
+    isAdmin = s.isAdmin;
+    startApp();
+  }
+}
+
+function loadData() {
+  try {
+    const h = localStorage.getItem('brk36_hist'); if(h) history = JSON.parse(h);
+    const p = localStorage.getItem('brk36_pass'); if(p) passations = JSON.parse(p);
+    const c = localStorage.getItem('brk36_checks'); if(c) checks = JSON.parse(c);
+    else checks = JSON.parse(JSON.stringify(DEFAULT_CHECKS));
+  } catch(e) { checks = JSON.parse(JSON.stringify(DEFAULT_CHECKS)); }
+}
+
+function saveData() {
+  try {
+    localStorage.setItem('brk36_hist', JSON.stringify(history.slice(0,300)));
+    localStorage.setItem('brk36_pass', JSON.stringify(passations.slice(0,50)));
+    localStorage.setItem('brk36_checks', JSON.stringify(checks));
+  } catch(e) {}
+}
+
+// ══════════════════════════════════════
+// LOGIN / LOGOUT
+// ══════════════════════════════════════
+function doLogin() {
+  const name = document.getElementById('loginName').value;
+  const pwd = document.getElementById('loginPwd').value;
+  const err = document.getElementById('loginErr');
+
+  if(!name) { err.textContent = 'Choisissez votre nom'; err.classList.add('on'); return; }
+
+  const isAdm = ADMINS.includes(name);
+  const expected = isAdm ? ADMIN_PWD : MGR_PWD;
+
+  if(pwd !== expected) { err.classList.add('on'); return; }
+
+  err.classList.remove('on');
+  currentUser = name;
+  isAdmin = isAdm;
+  localStorage.setItem('brk36_session', JSON.stringify({user:name, isAdmin:isAdm}));
+  startApp();
+}
+
+function doLogout() {
+  if(!confirm('Se déconnecter ?')) return;
+  currentUser = null; isAdmin = false;
+  localStorage.removeItem('brk36_session');
+  document.getElementById('appWrap').classList.remove('on');
+  document.getElementById('loginWrap').style.display = 'flex';
+  document.getElementById('loginName').value = '';
+  document.getElementById('loginPwd').value = '';
+}
+
+function startApp() {
+  document.getElementById('loginWrap').style.display = 'none';
+  document.getElementById('appWrap').classList.add('on');
+  document.getElementById('hdrUser').textContent = (isAdmin ? '👑 ' : '👤 ') + currentUser;
+  document.getElementById('managerVal').textContent = currentUser;
+  if(isAdmin) {
+    document.getElementById('admBanner').style.display = 'flex';
+    document.getElementById('adminNavBtn').style.display = 'flex';
+    renderAdminFilterOptions();
+    renderChecklistEditor();
+  }
+  setDateTime();
+  setInterval(setDateTime, 60000);
+  renderZones();
+  renderChecklist();
+  renderHistory();
+  renderStats();
+  renderPassations();
+  renderFilterOptions();
+}
+
+function setDateTime() {
+  const now = new Date();
+  document.getElementById('dateVal').textContent = now.toLocaleDateString('fr-FR',{day:'2-digit',month:'2-digit',year:'numeric'});
+  document.getElementById('heureVal').textContent = now.toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'});
+}
+
+// ══════════════════════════════════════
+// NAVIGATION
+// ══════════════════════════════════════
+function goTab(name, el) {
+  document.querySelectorAll('.sec').forEach(s => s.classList.remove('on'));
+  document.querySelectorAll('.nbtn').forEach(b => b.classList.remove('on'));
+  document.getElementById('sec-'+name).classList.add('on');
+  document.querySelectorAll('[data-tab="'+name+'"]').forEach(b => b.classList.add('on'));
+  document.getElementById('mainScroll').scrollTo(0,0);
+  if(name==='historique') renderHistory();
+  if(name==='stats') renderStats();
+  if(name==='passation') renderPassations();
+  if(name==='admin') { renderChecklistEditor(); renderAdminHist(); renderAdminStats(); }
+}
+
+// ══════════════════════════════════════
+// ZONES & CHECKLIST
+// ══════════════════════════════════════
+function renderZones() {
+  const zones = ['all', ...Object.keys(ZONES)];
+  document.getElementById('zonesRow').innerHTML = zones.map(z => {
+    const lbl = z==='all' ? 'Tout' : ZONES[z].label;
+    return `<button class="zbtn${z===curZone?' on':''}" onclick="filterZone('${z}',this)">${lbl}</button>`;
+  }).join('');
+}
+
+function filterZone(z, el) {
+  curZone = z;
+  document.querySelectorAll('.zbtn').forEach(b => b.classList.remove('on'));
+  el.classList.add('on');
+  renderChecklist();
+}
+
+function setStatus(id, st) {
+  statuses[id] = statuses[id]===st ? null : st;
+  renderChecklist();
+  updResult();
+}
+
+function renderChecklist() {
+  const filtered = curZone==='all' ? checks : checks.filter(c => c.zone===curZone);
+  const grouped = {};
+  filtered.forEach(c => { if(!grouped[c.zone]) grouped[c.zone]=[]; grouped[c.zone].push(c); });
+  let html = '';
+  Object.entries(grouped).forEach(([zone, items]) => {
+    const z = ZONES[zone] || {label:zone, icon:'•'};
+    html += `<div class="zgrp"><div class="zhdr">${z.icon} ${z.label}</div>`;
+    items.forEach(item => {
+      const st = statuses[item.id];
+      html += `<div class="crow">
+        <div class="cinfo">
+          <div class="clbl">${item.label}</div>
+          <div class="cdet">${item.detail}</div>
+        </div>
+        <div class="cbtns">
+          <button class="cb${st==='ok'?' ok':''}" onclick="setStatus('${item.id}','ok')">OK</button>
+          <button class="cb${st==='nok'?' nok':''}" onclick="setStatus('${item.id}','nok')">NOK</button>
+          <button class="cb${st==='na'?' na':''}" onclick="setStatus('${item.id}','na')">N/A</button>
+        </div>
+      </div>`;
+    });
+    html += '</div>';
+  });
+  document.getElementById('chkContainer').innerHTML = html;
+  updResult();
+  updProgress();
+}
+
+function updProgress() {
+  const done = checks.filter(c => statuses[c.id]).length;
+  const pct = checks.length ? Math.round(done/checks.length*100) : 0;
+  document.getElementById('progFill').style.width = pct+'%';
+  document.getElementById('progLbl').textContent = done+' / '+checks.length;
+}
+
+function updResult() {
+  const ok  = checks.filter(c => statuses[c.id]==='ok').length;
+  const nok = checks.filter(c => statuses[c.id]==='nok').length;
+  const na  = checks.filter(c => statuses[c.id]==='na').length;
+  const pct = (ok+nok)>0 ? Math.round(ok/(ok+nok)*100) : 0;
+  document.getElementById('resOK').textContent  = ok;
+  document.getElementById('resNOK').textContent = nok;
+  document.getElementById('resNA').textContent  = na;
+  document.getElementById('resPCT').textContent = (ok+nok)>0 ? pct+'%' : '-%';
+}
+
+// ══════════════════════════════════════
+// SAVE TOURNÉE
+// ══════════════════════════════════════
+function saveTournee() {
+  const service = document.getElementById('selService').value;
+  const ok  = checks.filter(c => statuses[c.id]==='ok').length;
+  const nok = checks.filter(c => statuses[c.id]==='nok').length;
+  const na  = checks.filter(c => statuses[c.id]==='na').length;
+  if(ok+nok===0) { showAlert('alertErr','Remplissez la checklist avant d\'enregistrer !'); return; }
+  const pct = Math.round(ok/(ok+nok)*100);
+  const nokItems = checks.filter(c => statuses[c.id]==='nok').map(c => c.label);
+  const now = new Date();
+  history.unshift({
+    id:Date.now(), date:now.toLocaleDateString('fr-FR'),
+    time:now.toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'}),
+    manager:currentUser, service, ok, nok, na,
+    total:checks.length, pct, note:document.getElementById('gNote').value,
+    nokItems, statuses:{...statuses}
+  });
+  saveData();
+  showAlert('alertOK', `✓ Tournée enregistrée — ${pct}% conforme`);
+  setTimeout(() => {
+    if(confirm(`Tournée enregistrée ! ${pct}% conforme.\nRéinitialiser la checklist ?`)) resetTournee();
+  }, 400);
+}
+
+function resetTournee() {
+  statuses={};
+  document.getElementById('gNote').value='';
+  curZone='all';
+  renderZones();
+  renderChecklist();
+  setDateTime();
+}
+
+function showAlert(id, msg) {
+  const el=document.getElementById(id);
+  el.textContent=msg; el.classList.add('on');
+  setTimeout(()=>el.classList.remove('on'),4000);
+}
+
+// ══════════════════════════════════════
+// HISTORY
+// ══════════════════════════════════════
+function renderFilterOptions() {
+  const mgrs = [...new Set(history.map(h=>h.manager))].sort();
+  const sel = document.getElementById('filterMgr');
+  sel.innerHTML = '<option value="">Tous les managers</option>' + mgrs.map(m=>`<option value="${m}">${m}</option>`).join('');
+}
+
+function toggleFilter() {
+  const fb = document.getElementById('filterBar');
+  fb.style.display = fb.style.display==='none' ? 'block' : 'none';
+}
+
+function renderHistory() {
+  renderFilterOptions();
+  const el = document.getElementById('histList');
+  const filter = document.getElementById('filterMgr').value;
+  let data = isAdmin ? history : history.filter(h=>h.manager===currentUser);
+  if(filter) data = data.filter(h=>h.manager===filter);
+  if(!data.length) { el.innerHTML='<div class="empty"><div class="empty-icon">📋</div><p>Aucune tournée</p></div>'; return; }
+  el.innerHTML = data.map(h => histCardHTML(h)).join('');
+}
+
+function histCardHTML(h) {
+  const cls = h.pct>=90?'b-ok':h.pct>=70?'b-warn':'b-nok';
+  return `<div class="hcard">
+    <div class="hhead">
+      <div class="hdate">${h.date} — ${h.time}</div>
+      <div style="display:flex;gap:4px;flex-wrap:wrap">
+        <span class="badge ${cls}">${h.pct}%</span>
+        ${isAdmin ? `<span class="badge b-adm">${h.manager}</span>` : ''}
+      </div>
+    </div>
+    <div class="hmeta">${h.service}</div>
+    <div class="hbadges">
+      <span class="badge b-ok">${h.ok} OK</span>
+      <span class="badge b-nok">${h.nok} NOK</span>
+      <span class="badge b-gray">${h.na} N/A</span>
+    </div>
+    ${h.nokItems&&h.nokItems.length ? `<div class="hnok">NOK : ${h.nokItems.join(' · ')}</div>` : ''}
+    ${h.note ? `<div style="font-size:12px;color:var(--txt2);margin-top:6px;padding-top:6px;border-top:1px solid var(--bdr)">${h.note}</div>` : ''}
+  </div>`;
+}
+
+// ══════════════════════════════════════
+// STATS
+// ══════════════════════════════════════
+function renderStats() {
+  const data = isAdmin ? history : history.filter(h=>h.manager===currentUser);
+  const sg = document.getElementById('statsGrid');
+  if(!data.length) {
+    sg.innerHTML='<p style="color:var(--txt2);font-size:14px;grid-column:1/-1;padding:20px 0">Aucune donnée</p>';
+    document.getElementById('statsChart').innerHTML='';
+    document.getElementById('statsMgr').innerHTML='';
+    return;
+  }
+  const total=data.length;
+  const avgPct=Math.round(data.reduce((s,h)=>s+h.pct,0)/total);
+  const best=Math.max(...data.map(h=>h.pct));
+  const avgNok=Math.round(data.reduce((s,h)=>s+h.nok,0)/total*10)/10;
+  sg.innerHTML=`
+    <div class="scard"><div class="snum">${total}</div><div class="slbl">Tournées</div></div>
+    <div class="scard"><div class="snum">${avgPct}%</div><div class="slbl">Conf. moy.</div></div>
+    <div class="scard"><div class="snum" style="color:var(--nok)">${avgNok}</div><div class="slbl">NOK moy.</div></div>
+    <div class="scard"><div class="snum" style="color:var(--ok)">${best}%</div><div class="slbl">Meilleure</div></div>`;
+
+  const last=data.slice(0,8).reverse();
+  if(last.length>1) {
+    const W=500,H=100,pad=24;
+    const pts=last.map((h,i)=>({x:pad+i*((W-2*pad)/(last.length-1)),y:H-(h.pct/100)*H,pct:h.pct,date:h.date.slice(0,5)}));
+    const path=pts.map((p,i)=>(i?'L':'M')+p.x+','+p.y).join(' ');
+    document.getElementById('statsChart').innerHTML=`
+      <div class="ctitle">Évolution conformité</div>
+      <div style="overflow-x:auto">
+        <svg viewBox="0 0 ${W} ${H+28}" style="width:100%;min-width:280px;overflow:visible">
+          <defs><linearGradient id="lg" x1="0" y1="0" x2="1" y2="0"><stop offset="0%" stop-color="#C8390A"/><stop offset="100%" stop-color="#F5A623"/></linearGradient></defs>
+          <path d="${path}" fill="none" stroke="url(#lg)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+          ${pts.map(p=>`
+            <circle cx="${p.x}" cy="${p.y}" r="5" fill="url(#lg)"/>
+            <text x="${p.x}" y="${p.y-9}" text-anchor="middle" font-size="11" font-family="Barlow,sans-serif" font-weight="700" fill="#C8390A">${p.pct}%</text>
+            <text x="${p.x}" y="${H+20}" text-anchor="middle" font-size="10" font-family="Barlow,sans-serif" fill="#A09A94">${p.date}</text>
+          `).join('')}
+        </svg>
+      </div>`;
+  } else document.getElementById('statsChart').innerHTML='<div class="ctitle">Évolution</div><p style="color:var(--txt2);font-size:13px">Besoin de plus de tournées</p>';
+
+  if(isAdmin) {
+    const ms={};
+    data.forEach(h=>{if(!ms[h.manager])ms[h.manager]={count:0,sum:0};ms[h.manager].count++;ms[h.manager].sum+=h.pct;});
+    document.getElementById('statsMgr').innerHTML=`
+      <div class="ctitle">Par manager</div>
+      ${Object.entries(ms).sort((a,b)=>b[1].sum/b[1].count-a[1].sum/a[1].count).map(([m,s])=>{
+        const avg=Math.round(s.sum/s.count);
+        const cls=avg>=90?'b-ok':avg>=70?'b-warn':'b-nok';
+        return`<div class="mrow"><div class="mname">${m}</div><span class="badge ${cls}">${avg}%</span><span style="font-size:12px;color:var(--txt2)">${s.count} tournée${s.count>1?'s':''}</span></div>`;
+      }).join('')}`;
+  } else document.getElementById('statsMgr').innerHTML='';
+}
+
+// ══════════════════════════════════════
+// PASSATION
+// ══════════════════════════════════════
+function handleFileUpload(e) {
+  const file = e.target.files[0];
+  if(!file) return;
+  uploadedFile = file;
+  const reader = new FileReader();
+  reader.onload = (ev) => {
+    uploadedFileData = ev.target.result;
+    const prev = document.getElementById('uploadPreview');
+    prev.style.display = 'block';
+    if(file.type.startsWith('image/')) {
+      prev.innerHTML = `<img src="${uploadedFileData}" style="width:100%;border-radius:var(--r);max-height:200px;object-fit:cover"/>
+        <button class="rm" onclick="clearUpload()" style="position:absolute;top:6px;right:6px;background:rgba(0,0,0,0.6);color:#fff;border:none;border-radius:50%;width:26px;height:26px;font-size:14px;cursor:pointer">✕</button>`;
+    } else {
+      prev.innerHTML = `<div style="display:flex;align-items:center;gap:8px;padding:10px 12px;background:var(--bg2);border-radius:var(--r)">
+        <span style="font-size:20px">📄</span>
+        <span style="font-size:13px;font-weight:600">${file.name}</span>
+        <button onclick="clearUpload()" style="margin-left:auto;background:none;border:none;color:var(--nok);cursor:pointer;font-size:16px">✕</button>
+      </div>`;
+    }
+  };
+  reader.readAsDataURL(file);
+}
+
+function clearUpload() {
+  uploadedFile=null; uploadedFileData=null;
+  document.getElementById('uploadPreview').style.display='none';
+  document.getElementById('uploadPreview').innerHTML='';
+  document.getElementById('passFile').value='';
+}
+
+function savePassation() {
+  const msg = document.getElementById('passMsg').value.trim();
+  if(!msg) { 
+    const a=document.getElementById('passAlert');
+    a.textContent='Écrivez un message avant d\'envoyer';
+    a.classList.add('on');
+    a.style.background='var(--nokb)';a.style.color='var(--nok)';
+    setTimeout(()=>a.classList.remove('on'),3000);
+    return; 
+  }
+  const now = new Date();
+  passations.unshift({
+    id:Date.now(),
+    author:currentUser,
+    date:now.toLocaleDateString('fr-FR'),
+    time:now.toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'}),
+    service:document.getElementById('selService').value,
+    msg,
+    fileData: uploadedFileData,
+    fileName: uploadedFile ? uploadedFile.name : null,
+    fileType: uploadedFile ? uploadedFile.type : null,
+  });
+  saveData();
+  document.getElementById('passMsg').value='';
+  clearUpload();
+  const a=document.getElementById('passAlert');
+  a.textContent='✓ Passation envoyée avec succès !';
+  a.classList.add('on');
+  a.style.background='var(--okb)';a.style.color='var(--ok)';
+  setTimeout(()=>a.classList.remove('on'),3000);
+  renderPassations();
+}
+
+function renderPassations() {
+  const last = document.getElementById('lastPassation');
+  const histEl = document.getElementById('passHistory');
+
+  if(!passations.length) {
+    last.innerHTML='';
+    histEl.innerHTML='<div class="empty"><div class="empty-icon">🔄</div><p>Aucune passation</p></div>';
+    return;
+  }
+
+  // Dernière passation
+  const p = passations[0];
+  if(p.author !== currentUser) {
+    last.innerHTML = `
+      <div style="background:linear-gradient(135deg,var(--bkd),var(--bk));border-radius:var(--rl);padding:14px 16px;margin-bottom:12px;color:#fff">
+        <div style="font-size:11px;opacity:0.7;margin-bottom:4px;font-weight:600;text-transform:uppercase;letter-spacing:0.4px">📨 Passation reçue de</div>
+        <div style="font-size:16px;font-weight:700;margin-bottom:2px">${p.author} — ${p.service}</div>
+        <div style="font-size:11px;opacity:0.7;margin-bottom:10px">${p.date} à ${p.time}</div>
+        <div style="background:rgba(255,255,255,0.15);border-radius:var(--r);padding:12px;font-size:14px;line-height:1.6">${p.msg}</div>
+        ${p.fileData && p.fileType && p.fileType.startsWith('image/') ? `<img src="${p.fileData}" style="width:100%;border-radius:var(--r);margin-top:10px;max-height:200px;object-fit:cover"/>` : ''}
+        ${p.fileData && p.fileType && !p.fileType.startsWith('image/') ? `<div style="display:flex;align-items:center;gap:8px;background:rgba(255,255,255,0.15);border-radius:var(--r);padding:10px;margin-top:10px"><span>📄</span><span style="font-size:13px">${p.fileName}</span></div>` : ''}
+      </div>`;
+  } else {
+    last.innerHTML = '';
+  }
+
+  // Historique
+  histEl.innerHTML = passations.map((p,i) => `
+    <div class="hcard" style="${i===0?'border-color:var(--bk)':''}">
+      <div class="hhead">
+        <div>
+          <div class="hdate">${p.author}</div>
+          <div class="hmeta">${p.service} · ${p.date} ${p.time}</div>
+        </div>
+        ${i===0?'<span class="badge b-ok">Récent</span>':''}
+      </div>
+      <div style="font-size:13px;color:var(--txt);line-height:1.5;background:var(--bg2);padding:10px;border-radius:var(--r)">${p.msg}</div>
+      ${p.fileData && p.fileType && p.fileType.startsWith('image/') ? `<img src="${p.fileData}" style="width:100%;border-radius:var(--r);margin-top:8px;max-height:150px;object-fit:cover"/>` : ''}
+      ${p.fileData && p.fileType && !p.fileType.startsWith('image/') ? `<div style="display:flex;align-items:center;gap:8px;background:var(--bg2);border-radius:var(--r);padding:8px 10px;margin-top:8px;font-size:12px"><span>📄</span><span>${p.fileName}</span></div>` : ''}
+    </div>`).join('');
+}
+
+// ══════════════════════════════════════
+// ADMIN — CHECKLIST EDITOR
+// ══════════════════════════════════════
+function renderChecklistEditor() {
+  const el = document.getElementById('checklistEditor');
+  if(!el) return;
+  el.innerHTML = checks.map((c,i) => `
+    <div class="edit-row">
+      <input value="${c.label}" onchange="checks[${i}].label=this.value" placeholder="Nom du point"/>
+      <input value="${c.detail}" onchange="checks[${i}].detail=this.value" placeholder="Détail" style="flex:1.5"/>
+      <select onchange="checks[${i}].zone=this.value">
+        ${Object.entries(ZONES).map(([k,v])=>`<option value="${k}" ${c.zone===k?'selected':''}>${v.label}</option>`).join('')}
+      </select>
+      <button class="rm-btn" onclick="removeCheckItem(${i})">✕</button>
+    </div>`).join('');
+}
+
+function addCheckItem() {
+  checks.push({id:'cc_'+Date.now(),zone:'cuisine',label:'Nouveau point',detail:'Description'});
+  renderChecklistEditor();
+}
+
+function removeCheckItem(i) {
+  checks.splice(i,1);
+  renderChecklistEditor();
+}
+
+function saveChecklist() {
+  saveData();
+  renderChecklist();
+  alert('Checklist enregistrée ! ✓');
+}
+
+// ══════════════════════════════════════
+// ADMIN — HISTORY & STATS
+// ══════════════════════════════════════
+function renderAdminFilterOptions() {
+  const mgrs = ['Clement','Valentin','Enock','Brice','Cecilia','Anais','Gwendeline','Karine','Chloé'];
+  const sel = document.getElementById('adminFilterMgr');
+  if(!sel) return;
+  sel.innerHTML = '<option value="">Tous les managers</option>' + mgrs.map(m=>`<option value="${m}">${m}</option>`).join('');
+}
+
+function renderAdminHist() {
+  const el = document.getElementById('adminHistList');
+  const cnt = document.getElementById('adminHistCount');
+  if(!el) return;
+  const filter = document.getElementById('adminFilterMgr').value;
+  const data = filter ? history.filter(h=>h.manager===filter) : history;
+  if(cnt) cnt.textContent = data.length;
+  if(!data.length) { el.innerHTML='<div class="empty"><div class="empty-icon">📋</div><p>Aucune tournée</p></div>'; return; }
+  el.innerHTML = data.slice(0,50).map(h => histCardHTML(h)).join('');
+}
+
+function renderAdminStats() {
+  const el = document.getElementById('adminStats');
+  if(!el || !history.length) return;
+  const ms={};
+  history.forEach(h=>{
+    if(!ms[h.manager])ms[h.manager]={count:0,sum:0,nok:0};
+    ms[h.manager].count++;ms[h.manager].sum+=h.pct;ms[h.manager].nok+=h.nok;
+  });
+  el.innerHTML = Object.entries(ms).sort((a,b)=>b[1].sum/b[1].count-a[1].sum/a[1].count).map(([m,s])=>{
+    const avg=Math.round(s.sum/s.count);
+    const cls=avg>=90?'b-ok':avg>=70?'b-warn':'b-nok';
+    return`<div class="mrow">
+      <div class="mname">${m}</div>
+      <span class="badge ${cls}">${avg}%</span>
+      <span style="font-size:12px;color:var(--txt2)">${s.count} tournée${s.count>1?'s':''}</span>
+    </div>`;
+  }).join('');
+}
+
+// ══════════════════════════════════════
+// EXPORT CSV
+// ══════════════════════════════════════
+function exportCSV() {
+  const data = isAdmin ? history : history.filter(h=>h.manager===currentUser);
+  if(!data.length) { alert('Aucune donnée à exporter'); return; }
+  const rows=[['Date','Heure','Manager','Service','OK','NOK','N/A','Conformité (%)','Points NOK','Observations']];
+  data.forEach(h=>rows.push([h.date,h.time,h.manager,h.service,h.ok,h.nok,h.na,h.pct,(h.nokItems||[]).join(' / '),h.note||'']));
+  const csv=rows.map(r=>r.map(v=>`"${String(v).replace(/"/g,'""')}"`).join(',')).join('\n');
+  const blob=new Blob(['\uFEFF'+csv],{type:'text/csv;charset=utf-8'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');
+  a.href=url;a.download='BRK36_Historique_'+new Date().toISOString().slice(0,10)+'.csv';
+  document.body.appendChild(a);a.click();document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+
+// ══════════════════════════════════════
+// CLEAR ALL
+// ══════════════════════════════════════
+function clearAllData() {
+  if(!confirm('⚠️ Effacer TOUTES les données ? Cette action est irréversible !')) return;
+  if(!confirm('Dernière confirmation : effacer définitivement ?')) return;
+  history=[];passations=[];
+  checks=JSON.parse(JSON.stringify(DEFAULT_CHECKS));
+  saveData();
+  renderHistory();renderStats();renderPassations();renderChecklistEditor();renderAdminHist();
+  alert('Données effacées.');
+}
+
+// ══════════════════════════════════════
+// START
+// ══════════════════════════════════════
+init();
+</script>
+</body>
+</html>
